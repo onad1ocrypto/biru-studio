@@ -150,8 +150,9 @@
   .gameTile .name{position:relative;z-index:1;font-weight:800;font-size:clamp(.95rem,2.6vw,1.15rem);color:var(--navy)}
   .gameTile.g1{background:linear-gradient(160deg,#FFB3C7,#FF7FA5)}
   .gameTile.g2{background:linear-gradient(160deg,#C9B6FF,#9E86F5)}
+  .gameTile.g3{background:linear-gradient(160deg,#A8E6A3,#5FCB7E)}
 
-  #view-balloon,#view-memory{max-width:none;min-height:100vh;padding:12px clamp(10px,3vw,22px) 24px;
+  #view-balloon,#view-memory,#view-animals{max-width:none;min-height:100vh;padding:12px clamp(10px,3vw,22px) 24px;
     background:radial-gradient(1200px 600px at 50% -10%,#12466F 0%,#0B2A44 55%,#071C2E 100%);color:#EAF6FF}
   .gbar{display:flex;align-items:center;gap:12px;max-width:1000px;margin:0 auto 8px}
   .gbar .score{margin-left:auto;background:rgba(255,255,255,.14);border-radius:999px;padding:10px 18px;
@@ -177,6 +178,21 @@
   .mcard span{display:none}
   .mcard.match{background:linear-gradient(160deg,#B7F5C9,#7BDE9E);box-shadow:inset 0 0 0 3px #fff}
   .mcard:active{transform:scale(.96)}
+  .afield{position:relative;max-width:900px;margin:clamp(8px,2vw,20px) auto 0;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(min(30vw,150px),1fr));gap:clamp(10px,2.4vw,18px)}
+  .animal{aspect-ratio:1/1;border-radius:28px;background:rgba(255,255,255,.10);box-shadow:inset 0 0 0 2px rgba(255,255,255,.10);
+    display:grid;place-items:center;font-size:clamp(44px,11vw,76px);transition:transform .12s ease,background .18s ease;
+    animation:popIn .28s ease both}
+  .animal:active{transform:scale(.93)}
+  .animal.done{background:rgba(142,230,176,.28);box-shadow:inset 0 0 0 3px rgba(142,230,176,.7);transform:scale(.9)}
+  .animal.hint{background:rgba(255,217,61,.22);box-shadow:inset 0 0 0 3px rgba(255,217,61,.75);animation:popIn .28s ease both,wobble .7s ease infinite}
+  @keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:scale(1);opacity:1}}
+  @keyframes wobble{0%,100%{rotate:-3deg}50%{rotate:3deg}}
+  .askbar{max-width:900px;margin:0 auto;background:rgba(255,255,255,.10);border-radius:22px;padding:14px 18px;
+    text-align:center;box-shadow:inset 0 0 0 2px rgba(255,255,255,.10)}
+  .askbar .q{font-size:clamp(.95rem,2.6vw,1.15rem);font-weight:800;color:#EAF6FF}
+  .askbar .items{display:flex;gap:10px;justify-content:center;margin-top:8px;font-size:clamp(24px,6vw,34px);flex-wrap:wrap}
+  .askbar .items span.done{opacity:.28;filter:grayscale(1)}
   .winbox{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:22px;text-align:center;
     background:rgba(7,28,46,.86);backdrop-filter:blur(6px)}
   .wincard{display:grid;gap:12px;justify-items:center;color:#fff}
@@ -353,6 +369,9 @@
     <button class="gameTile g2" id="gameMemory">
       <span class="icon">🧩</span><span class="name">Cocokkan Kartu</span>
     </button>
+    <button class="gameTile g3" id="gameAnimals">
+      <span class="icon">🐣</span><span class="name">Ketuk Hewan</span>
+    </button>
   </div>
 </section>
 
@@ -377,6 +396,26 @@
       <span data-mascot="yay"></span>
       <h3>Hebat!</h3>
       <button class="donebtn" id="btnMemoryAgain">🔁 Main lagi</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= GAME: KETUK HEWAN ================= -->
+<section id="view-animals" class="kidish hidden">
+  <div class="gbar">
+    <button class="backbtn" id="btnAnimalsExit" aria-label="Kembali">⬅️</button>
+    <div class="score" id="animalScore">⭐ 0</div>
+  </div>
+  <div class="askbar">
+    <div class="q" id="animalQuestion">Ketuk: 🐣</div>
+    <div class="items" id="animalList"></div>
+  </div>
+  <div class="afield" id="animalField"></div>
+  <div class="winbox hidden" id="animalWin">
+    <div class="wincard">
+      <span data-mascot="yay"></span>
+      <h3>Semua ketemu! Hebat! 🎉</h3>
+      <button class="donebtn" id="btnAnimalsAgain">🔁 Main lagi</button>
     </div>
   </div>
 </section>
@@ -520,6 +559,9 @@ const BALLOON_COLORS=[
   'radial-gradient(circle at 32% 28%,#D9C8FF,#9B7BF0)'
 ];
 const MEM_EMOJI=['🐳','🐣','🦖','🌈'];
+const ANIMAL_EMOJI=['🐣','🐳','🦖','🐊','🦋','🐙','🐝','🦁','🐸','🐢','🐰','🦉'];
+const ANIMAL_NAMES={'🐣':'Anak Ayam','🐳':'Paus','🦖':'Dino','🐊':'Buaya','🦋':'Kupu-kupu','🐙':'Gurita',
+  '🐝':'Lebah','🦁':'Singa','🐸':'Katak','🐢':'Kura-kura','🐰':'Kelinci','🦉':'Burung Hantu'};
 
 /* ---------- maskot ---------- */
 function mascot(mood,size){
@@ -626,11 +668,12 @@ function toast(msg){
 
 /* ---------- navigasi ---------- */
 const views={home:'#view-home',videos:'#view-videos',games:'#view-games',balloon:'#view-balloon',
-  memory:'#view-memory',player:'#view-player',pin:'#view-pin',settings:'#view-settings'};
+  memory:'#view-memory',animals:'#view-animals',player:'#view-player',pin:'#view-pin',settings:'#view-settings'};
 function show(name){
   if(name!=='balloon') stopBalloons();
+  if(name!=='animals') stopAnimals();
   /* layar gelap (pemutar & game) tanpa hiasan langit */
-  const dark = (name==='player'||name==='balloon'||name==='memory');
+  const dark = (name==='player'||name==='balloon'||name==='memory'||name==='animals');
   document.body.classList.toggle('darkview',dark);
   Object.entries(views).forEach(([k,sel])=>$(sel).classList.toggle('hidden',k!==name));
   window.scrollTo(0,0);
@@ -809,6 +852,71 @@ $('#memoryGrid').addEventListener('click',(e)=>{
   }
 });
 
+/* ---------- GAME: ketuk hewan (tanpa timer, cocok balita) ---------- */
+let animalTargets=[], animalFound=0, animalRaf=null, animalWait=0;
+function startAnimals(){
+  const total=6;
+  animalTargets=[...ANIMAL_EMOJI].sort(()=>Math.random()-0.5).slice(0,total);
+  animalFound=0;
+  $('#animalWin').classList.add('hidden');
+  $('#animalScore').textContent='⭐ 0';
+  const field=$('#animalField');
+  const tiles=[...animalTargets.map(e=>({e,hit:false}))];
+  /* tambah 3 pengalih perhatian supaya anak benar-benar memilih */
+  const decoys=[...ANIMAL_EMOJI].filter(e=>!animalTargets.includes(e)).slice(0,3);
+  decoys.forEach(e=>tiles.push({e,hit:true,decoy:true}));
+  tiles.sort(()=>Math.random()-0.5);
+  field.innerHTML=tiles.map((t,i)=>`<button class="animal" data-e="${t.e}" data-i="${i}" aria-label="${ANIMAL_NAMES[t.e]||'Hewan'}">${t.e}</button>`).join('');
+  renderAnimalList();
+  nextAnimalQuestion();
+  show('animals');
+  clearInterval(animalLoop);
+  animalLoop=setInterval(()=>{ if(state.sound!==false) sfx(340,.12,'sine',.03,90); },1400);
+}
+let animalLoop=null;
+function renderAnimalList(){
+  $('#animalList').innerHTML=animalTargets.map(e=>`<span data-need="${e}">${e}</span>`).join('');
+}
+function nextAnimalQuestion(){
+  const next=animalTargets.find(e=>!animalDone(e));
+  const q=$('#animalQuestion');
+  if(!next){ q.textContent='Semua sudah diketuk! 🎉'; return; }
+  q.innerHTML='Ketuk: <span style="font-size:1.4em">'+next+'</span> &nbsp;('+(ANIMAL_NAMES[next]||'')+')';
+  /* sorot hewan yang dicari setelah 2,5 detik */
+  clearTimeout(animalWait);
+  animalWait=setTimeout(()=>{
+    const t=document.querySelector('#animalField .animal[data-e="'+next+'"]');
+    if(t && !t.classList.contains('done')) t.classList.add('hint');
+  },2500);
+}
+function animalDone(e){
+  return !document.querySelector('#animalField .animal[data-e="'+e+'"]:not(.done)') &&
+         document.querySelector('#animalField .animal[data-e="'+e+'"]');
+}
+$('#animalField').addEventListener('click',(e)=>{
+  const btn=e.target.closest('.animal'); if(!btn) return;
+  if(btn.classList.contains('done')) return;
+  const emoji=btn.dataset.e;
+  const needed=animalTargets.find(x=>!document.querySelector('#animalField .animal[data-e="'+x+'"]:not(.done)') && x===emoji);
+  if(emoji && animalTargets.includes(emoji) && !document.querySelector('#animalField .animal[data-e="'+emoji+'"].done')){
+    btn.classList.remove('hint');
+    btn.classList.add('done');
+    sfxDing();
+    animalFound++;
+    $('#animalScore').textContent='⭐ '+animalFound;
+    const chip=document.querySelector('#animalList span[data-need="'+emoji+'"]');
+    if(chip) chip.classList.add('done');
+    clearTimeout(animalWait);
+    nextAnimalQuestion();
+    if(animalFound>=animalTargets.length){ setTimeout(()=>$('#animalWin').classList.remove('hidden'),400); }
+  } else {
+    /* hewan lain: cuma bergoyang, tidak menghukum */
+    btn.style.animation='none'; void btn.offsetWidth; btn.style.animation='wobble .5s ease';
+    if(state.sound!==false) sfx(220,.10,'sine',.03,-60);
+  }
+});
+function stopAnimals(){ clearInterval(animalLoop); animalLoop=null; clearTimeout(animalWait); }
+
 /* ---------- timer ---------- */
 let timerEnd=0, breakActive=false;
 function ensureTimer(){ if(state.timerMin>0&&!timerEnd&&!breakActive) timerEnd=Date.now()+state.timerMin*60000; }
@@ -822,7 +930,7 @@ function renderTimerPill(){
 }
 function showBreak(){
   breakActive=true; timerEnd=0;
-  stopStage(); stopBalloons();
+  stopStage(); stopBalloons(); stopAnimals();
   $('#endOverlay').classList.add('hidden');
   $('#breakOverlay').classList.remove('hidden');
 }
@@ -1053,6 +1161,9 @@ $('#btnAdd').addEventListener('click',async()=>{
 $('#gameBalloon').addEventListener('click',()=>{ sfxTap(); startBalloons(); });
 $('#btnBalloonExit').addEventListener('click',()=>{ sfxTap(); stopBalloons(); show('games'); });
 $('#gameMemory').addEventListener('click',()=>{ sfxTap(); startMemory(); });
+$('#gameAnimals').addEventListener('click',()=>{ sfxTap(); startAnimals(); });
+$('#btnAnimalsExit').addEventListener('click',()=>{ sfxTap(); stopAnimals(); show('games'); });
+$('#btnAnimalsAgain').addEventListener('click',()=>{ sfxTap(); startAnimals(); });
 $('#btnMemoryExit').addEventListener('click',()=>{ sfxTap(); show('games'); });
 $('#btnMemoryAgain').addEventListener('click',()=>{ sfxTap(); startMemory(); });
 
