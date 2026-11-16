@@ -49,11 +49,6 @@
   .hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto}
   .timerpill{background:#fff;border-radius:999px;padding:9px 15px;font-weight:800;font-size:.95rem;box-shadow:var(--sh);white-space:nowrap}
   /* tombol admin: kecil + samar, supaya tidak menarik anak */
-  .parentrow{display:flex;justify-content:center;margin:22px 0 6px}
-  .parentbtn{display:inline-flex;align-items:center;gap:8px;padding:11px 18px;border-radius:999px;
-    background:rgba(255,255,255,.72);color:#0B2A44;font-weight:800;font-size:.9rem;
-    box-shadow:0 6px 16px rgba(11,42,68,.14),inset 0 0 0 1.5px rgba(11,42,68,.10)}
-  .parentbtn:active{transform:scale(.97);background:rgba(255,255,255,.95)}
   .lockbtn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:none;
     border:1px solid rgba(16,50,75,.10);font-size:12px;color:rgba(16,50,75,.42);
     display:grid;place-items:center;line-height:1;transition:background .15s ease}
@@ -155,6 +150,8 @@
   .gameTile .name{position:relative;z-index:1;font-weight:800;font-size:clamp(.95rem,2.6vw,1.15rem);color:var(--navy)}
   .gameTile.g1{background:linear-gradient(160deg,#FFB3C7,#FF7FA5)}
   .gameTile.g2{background:linear-gradient(160deg,#C9B6FF,#9E86F5)}
+  .gameTile.gx{background:linear-gradient(160deg,#CDE8FF,#8ECBF5)}
+  .gameTile.gx .icon{font-size:clamp(34px,9vw,46px)}
   .gameTile.g3{background:linear-gradient(160deg,#A8E6A3,#5FCB7E)}
 
   #view-balloon,#view-memory,#view-animals{max-width:none;min-height:100vh;padding:12px clamp(10px,3vw,22px) 24px;
@@ -316,10 +313,6 @@
     </button>
   </div>
 
-  <div class="parentrow">
-    <button class="parentbtn" id="btnParent">⚙️ Pengaturan orang tua</button>
-  </div>
-
   <p class="license">BY SASAM</p>
 </section>
 
@@ -381,6 +374,7 @@
     <button class="gameTile g3" id="gameAnimals">
       <span class="icon">🐣</span><span class="name">Ketuk Hewan</span>
     </button>
+    <div id="extraGames" style="display:contents"></div>
   </div>
 </section>
 
@@ -1104,7 +1098,6 @@ $('#tileVideo').addEventListener('click',()=>{ sfxTap(); openVideos(); });
 $('#tileGame').addEventListener('click',()=>{ sfxTap(); show('games'); });
 $('#btnVideosBack').addEventListener('click',()=>{ sfxTap(); adminMode=false; stopStage(); renderHome(); show('home'); });
 $('#btnGamesBack').addEventListener('click',()=>{ sfxTap(); show('home'); });
-$('#btnParent').addEventListener('click',()=>{ sfxTap(); askPin(openSettings); });
 $('#btnLock').addEventListener('click',()=>{
   const style=state.adminStyle||(state.adminHidden===true?'hidden':'visible');
   if(style==='hidden') return;          /* saat disembunyikan: tombol benar-benar mati */
@@ -1252,8 +1245,33 @@ $('#btnChangePin').addEventListener('click',async()=>{
 $('#btnExport').addEventListener('click',exportBackup);
 $('#fImport').addEventListener('change',async(e)=>{ await importBackup(e.target.files&&e.target.files[0]); e.target.value=''; });
 
+/* ---------- game tambahan dari games.json ---------- */
+async function loadExtraGames(){
+  const box=$('#extraGames'); if(!box) return;
+  let list=[];
+  try{
+    const r=await fetch('games.json',{cache:'no-cache'});
+    if(r.ok) list=await r.json();
+  }catch(e){ return; }             /* offline / belum ada file -> diam saja */
+  if(!Array.isArray(list)||!list.length) return;
+  box.innerHTML='';
+  list.forEach(g=>{
+    if(!g||!g.file) return;
+    const b=document.createElement('button');
+    b.className='gameTile gx';
+    b.dataset.game=g.file;
+    b.innerHTML='<span class="icon">'+(g.emoji||'🎮')+'</span><span class="name"></span>';
+    b.querySelector('.name').textContent=g.name||'Game';
+    box.appendChild(b);
+  });
+  box.onclick=(e)=>{
+    const t=e.target.closest('[data-game]'); if(!t) return;
+    sfxTap(); location.href=t.dataset.game;
+  };
+}
+
 /* ---------- init ---------- */
-paintMascots(); renderEmojis(); renderMode(); renderHome(); renderVideos();
+paintMascots(); renderEmojis(); renderMode(); renderHome(); renderVideos(); loadExtraGames();
 ensureTimer(); renderTimerPill();
 if(navigator.storage&&navigator.storage.persist){ navigator.storage.persist().catch(()=>{}); }
 </script>
