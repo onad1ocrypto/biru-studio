@@ -3,11 +3,12 @@
    - Halaman (HTML) : ambil dari internet dulu, kalau gagal pakai cache  -> update langsung terlihat
    - File lain      : pakai cache dulu (cepat & tetap jalan offline)
    Versi cache dinaikkan setiap rilis agar cache lama dibuang. */
-const CACHE = 'biru-studio-v5';
+const CACHE = 'biru-studio-v6';
 const GAMES_URL = 'games.json';
 const ASSETS = [
   './', './index.html', './app.js', './games.json', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png',
+  './music/langit-biru.m4a',  './music/main-yuk.m4a',  './music/malam-bintang.m4a',
   './animals/bee.jpg',  './animals/butterfly.jpg',  './animals/chick.jpg',  './animals/croc.jpg',  './animals/frog.jpg',  './animals/lion.jpg',  './animals/octopus.jpg',  './animals/rabbit.jpg',  './animals/turtle.jpg',  './animals/whale.jpg'
 ];
 
