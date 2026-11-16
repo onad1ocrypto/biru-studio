@@ -49,6 +49,13 @@
   .hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto}
   .timerpill{background:#fff;border-radius:999px;padding:9px 15px;font-weight:800;font-size:.95rem;box-shadow:var(--sh);white-space:nowrap}
   /* tombol admin: kecil + samar, supaya tidak menarik anak */
+  .musicbtn{width:34px;height:34px;border-radius:50%;background:rgba(255,255,255,.55);
+    box-shadow:0 3px 10px rgba(11,42,68,.12);font-size:15px;color:#0B2A44;
+    display:grid;place-items:center;line-height:1;transition:background .15s ease,transform .15s ease}
+  .musicbtn:active{transform:scale(.94)}
+  .musicbtn.off{opacity:.55;filter:grayscale(1)}
+  .musicbtn.playing{background:linear-gradient(160deg,#7FDBFF,#39B6F0);color:#fff;animation:musicPulse 1.6s ease-in-out infinite}
+  @keyframes musicPulse{0%,100%{box-shadow:0 0 0 0 rgba(57,182,240,.45)}50%{box-shadow:0 0 0 7px rgba(57,182,240,0)}}
   .lockbtn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:none;
     border:1px solid rgba(16,50,75,.10);font-size:12px;color:rgba(16,50,75,.42);
     display:grid;place-items:center;line-height:1;transition:background .15s ease}
@@ -301,6 +308,7 @@
       <h1>BIRU STUDIO</h1>
     </div>
     <div class="hdr-right">
+      <button id="btnMusic" class="musicbtn" aria-label="Musik" title="Musik">🎵</button>
       <span id="timerPill" class="timerpill hidden">⏳ <b id="timerTxt">15 mnt</b></span>
       <button id="btnLock" class="lockbtn" aria-label="Orang tua">🔒</button>
     </div>
@@ -525,6 +533,18 @@
     <p class="muted" id="styleMsg" style="font-size:.8rem;margin:10px 0 0;font-weight:700"></p>
   </div>
   <div class="panel">
+    <h3>🎵 Musik anak</h3>
+    <p class="muted" style="font-size:.82rem;font-weight:700;margin:0 0 10px;line-height:1.45">
+      Lagu tanpa vokal, dibuat khusus untuk aplikasi ini. Tombol 🎵 di pojok kanan atas untuk menyalakan/mematikan.
+    </p>
+    <div class="toggle" style="margin-bottom:12px">
+      <b style="font-size:.94rem">Nyalakan musik</b>
+      <button class="switch" id="musicSwitch" aria-label="Musik"></button>
+    </div>
+    <div class="moderow" id="musicList" style="flex-wrap:wrap"></div>
+    <p class="muted" id="musicMsg" style="font-size:.8rem;margin:10px 0 0;font-weight:700"></p>
+  </div>
+  <div class="panel">
     <h3>💾 Backup</h3>
     <div class="filerow">
       <button class="btn brand" id="btnExport">⬇️ Unduh</button>
@@ -661,11 +681,13 @@ function loadState(){
         const s=JSON.parse(raw);
         if(s && Array.isArray(s.videos)) return {videos:s.videos, timerMin:Number(s.timerMin)||0,
           sound:s.sound!==false, adminHidden:s.adminHidden===true,
-          pinHash:s.pinHash||'', adminStyle:s.adminStyle||'visible'};
+          pinHash:s.pinHash||'', adminStyle:s.adminStyle||'visible',
+          musicOn:s.musicOn===true, musicTrack:typeof s.musicTrack==='number'?s.musicTrack:0};
       }
     }catch(e){}
   }
-  return {videos:[], timerMin:0, sound:true, adminHidden:false, pinHash:'', adminStyle:'visible'};
+  return {videos:[], timerMin:0, sound:true, adminHidden:false, pinHash:'', adminStyle:'visible',
+          musicOn:false, musicTrack:0};
 }
 let state=loadState();
 function saveState(){
@@ -674,6 +696,7 @@ function saveState(){
     store.setItem(KEY, JSON.stringify({
       timerMin:state.timerMin, sound:state.sound!==false, adminHidden:state.adminHidden===true,
       pinHash:state.pinHash||'', adminStyle:state.adminStyle||'visible',
+      musicOn:state.musicOn===true, musicTrack:Number(state.musicTrack)||0,
       videos:state.videos.map(v=> v.type==='file' ? {...v,src:''} : v)
     }));
   }catch(e){}
@@ -735,7 +758,8 @@ function askPin(action){ pendingAction=action; pinBuf=''; renderPin(); show('pin
 /* ---------- pemutar ---------- */
 let playId=null, isPlaying=false;
 function order(){ return state.videos.map(v=>v.id); }
-function openPlayer(id){ playId=id; sfxOpen(); renderPlayer(); show('player'); }
+function openPlayer(id){
+  musicDuck(0.08); playId=id; sfxOpen(); renderPlayer(); show('player'); }
 function currentVideo(){ return state.videos.find(v=>v.id===playId); }
 function renderPlayer(){
   const v=currentVideo();
@@ -808,6 +832,7 @@ function step(dir){
   if(j>=0&&j<o.length){ playId=o[j]; sfxTap(); renderPlayer(); }
 }
 function stopStage(){
+  musicDuck(MUSIC_VOL);
   const vid=document.querySelector('#stage video'); if(vid){ try{ vid.pause(); }catch(e){} }
   $('#stage').innerHTML=''; playId=null;
 }
@@ -1010,7 +1035,7 @@ async function checkPin(){
 function openSettings(){
   $('#timerInput').value=state.timerMin?String(state.timerMin):'';
   $('#soundSwitch').classList.toggle('on',state.sound!==false);
-  renderAdminStyleButtons();
+  renderAdminStyleButtons(); renderMusicSettings();
   $('#pinMsg').textContent = state.pinHash ? 'PIN sudah diganti dari bawaan.' : 'Masih memakai PIN bawaan 1234.';
   $('#pinOld').value=''; $('#pinNew').value='';
   refreshCap();
@@ -1084,6 +1109,7 @@ async function exportBackup(){
     for(const r of recs){ if(r&&r.blob) media.push({id:r.id,type:r.blob.type||'video/mp4',data:await blobToB64(r.blob)}); }
   }catch(e){}
   const data={app:'biru-studio',v:3,state:{timerMin:state.timerMin,sound:state.sound,
+    musicOn:state.musicOn===true,musicTrack:Number(state.musicTrack)||0,
     videos:state.videos.map(v=> v.type==='file'?{...v,src:''}:v)},media};
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -1101,7 +1127,8 @@ async function importBackup(file){
   for(const m of (data.media||[])){ try{ await idbPut({id:m.id,blob:b64ToBlob(m.data,m.type)}); }catch(e){} }
   state={videos:data.state.videos||[],timerMin:Number(data.state.timerMin)||0,
     sound:data.state.sound!==false, adminHidden:data.state.adminHidden===true,
-    pinHash:data.state.pinHash||'', adminStyle:data.state.adminStyle||'visible'};
+    pinHash:data.state.pinHash||'', adminStyle:data.state.adminStyle||'visible',
+    musicOn:data.state.musicOn===true, musicTrack:Number(data.state.musicTrack)||0};
   saveState(); renderVideos(); msg.textContent='Dipulihkan ✅'; toast('Dipulihkan');
 }
 
@@ -1257,6 +1284,63 @@ $('#btnChangePin').addEventListener('click',async()=>{
 $('#btnExport').addEventListener('click',exportBackup);
 $('#fImport').addEventListener('change',async(e)=>{ await importBackup(e.target.files&&e.target.files[0]); e.target.value=''; });
 
+/* ---------- musik anak-anak (musik latar) ---------- */
+const MUSIC=[
+  {file:'music/langit-biru.m4a',   name:'Langit Biru'},
+  {file:'music/main-yuk.m4a',      name:'Main Yuk'},
+  {file:'music/malam-bintang.m4a', name:'Malam Bintang'}
+];
+const MUSIC_VOL=0.4;
+const audio=new Audio();
+audio.loop=true; audio.preload='none'; audio.volume=MUSIC_VOL;
+let musicAsked=false;      /* sudah ada interaksi pengguna? (syarat autoplay browser) */
+function musicTrack(){ return Math.max(0,Math.min(MUSIC.length-1,Number(state.musicTrack)||0)); }
+function renderMusicBtn(){
+  const b=$('#btnMusic'); if(!b) return;
+  const on=state.musicOn===true;
+  b.textContent=on?'🎵':'🔇';
+  b.classList.toggle('off',!on);
+  b.classList.toggle('playing',on&&!audio.paused);
+  b.title=(on?'Matikan':'Nyalakan')+' musik — '+(MUSIC[musicTrack()].name);
+}
+function musicStart(){
+  if(!musicAsked) return;
+  if(state.musicOn!==true) return;
+  const src=musicTrack();
+  audio.src=MUSIC[src].file;
+  audio.play().then(renderMusicBtn).catch(()=>{ renderMusicBtn(); });
+}
+function musicStop(){ audio.pause(); renderMusicBtn(); }
+function musicToggle(){
+  musicAsked=true;
+  state.musicOn = state.musicOn!==true;
+  saveState(); sfxTap();
+  if(state.musicOn){ musicStart(); toast('Musik: '+MUSIC[musicTrack()].name); }
+  else { musicStop(); toast('Musik dimatikan'); }
+  renderMusicBtn(); renderMusicSettings();
+}
+/* hentikan musik saat menonton video supaya suara tidak tumpang tindih */
+function musicDuck(level){ if(state.musicOn!==true) return; audio.volume=level; }
+function renderMusicSettings(){
+  const box=$('#musicList'); if(!box) return;
+  box.innerHTML=MUSIC.map((m,i)=>
+    `<button class="mode ${i===musicTrack()?'on':''}" data-music="${i}" style="flex:1 1 30%">${i===musicTrack()?'▶ ':''}${m.name}</button>`
+  ).join('');
+  const sw=$('#musicSwitch'); if(sw) sw.classList.toggle('on',state.musicOn===true);
+  const st=$('#musicMsg'); if(st) st.textContent = state.musicOn===true
+    ? 'Musik menyala: '+MUSIC[musicTrack()].name
+    : 'Musik sedang mati.';
+}
+
+$('#btnMusic').addEventListener('click',musicToggle);
+document.addEventListener('click',(e)=>{
+  const b=e.target.closest('[data-music]'); if(!b) return;
+  musicAsked=true;
+  state.musicTrack=Number(b.dataset.music); state.musicOn=true;
+  saveState(); sfxTap(); musicStart(); renderMusicSettings(); renderMusicBtn();
+  toast('Musik: '+MUSIC[musicTrack()].name);
+});
+
 /* ---------- game tambahan dari games.json ---------- */
 async function loadExtraGames(){
   const box=$('#extraGames'); if(!box) return;
@@ -1284,6 +1368,15 @@ async function loadExtraGames(){
 
 /* ---------- init ---------- */
 paintMascots(); renderEmojis(); renderMode(); renderHome(); renderVideos(); loadExtraGames();
+/* musik: siapkan tombol & panel, lalu nyalakan bila sebelumnya menyala */
+renderMusicBtn(); renderMusicSettings();
+const msw=$('#musicSwitch');
+if(msw) msw.addEventListener('click',()=>{ musicAsked=true; musicToggle(); });
+/* browser hanya mengizinkan suara setelah pengguna menyentuh layar */
+['pointerdown','touchstart','keydown'].forEach(ev=>
+  document.addEventListener(ev,()=>{ if(!musicAsked){ musicAsked=true; musicStart(); } },{once:true,passive:true}));
+/* kecilkan musik saat menonton video */
+if(state.musicOn===true){ musicStart(); }
 ensureTimer(); renderTimerPill();
 if(navigator.storage&&navigator.storage.persist){ navigator.storage.persist().catch(()=>{}); }
 </script>
