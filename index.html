@@ -541,6 +541,10 @@
       <b style="font-size:.94rem">Nyalakan musik</b>
       <button class="switch" id="musicSwitch" aria-label="Musik"></button>
     </div>
+    <div class="toggle" style="margin-bottom:12px">
+      <b style="font-size:.94rem">Nyalakan sendiri saat buka game</b>
+      <button class="switch" id="musicAutoSwitch" aria-label="Musik otomatis"></button>
+    </div>
     <div class="moderow" id="musicList" style="flex-wrap:wrap"></div>
     <p class="muted" id="musicMsg" style="font-size:.8rem;margin:10px 0 0;font-weight:700"></p>
   </div>
@@ -647,6 +651,13 @@ const sfxTap=()=>sfx(520,.09,'sine',.05,140);
 const sfxOpen=()=>{sfx(420,.10,'triangle',.06,120); setTimeout(()=>sfx(640,.14,'triangle',.05,160),90);};
 const sfxDing=()=>{sfx(660,.16,'sine',.06,220); setTimeout(()=>sfx(880,.22,'sine',.05,140),150);};
 const sfxPop=()=>sfx(760,.08,'square',.035,-300);
+/* --- efek suara lucu untuk game --- */
+const sfxBoing=()=>{ sfx(180,.16,'sine',.06,520); setTimeout(()=>sfx(520,.12,'sine',.04,-260),120); };
+const sfxCoin=()=>{ sfx(880,.08,'square',.045,0); setTimeout(()=>sfx(1320,.16,'square',.04,0),80); };
+const sfxWrong=()=>{ sfx(240,.12,'triangle',.05,-80); setTimeout(()=>sfx(200,.16,'triangle',.045,-60),110); };
+const sfxSparkle=()=>{ [1046,1318,1568,2093].forEach((f,i)=>setTimeout(()=>sfx(f,.16,'sine',.035,60),i*85)); };
+const sfxWhoosh=()=>sfx(300,.22,'sine',.035,700);
+const sfxTada=()=>{ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>sfx(f,.28,'triangle',.05,0),i*110)); };
 
 /* ---------- penyimpanan ---------- */
 const store=(()=>{try{localStorage.setItem('__t','1');localStorage.removeItem('__t');return localStorage}catch(e){return null}})();
@@ -682,12 +693,13 @@ function loadState(){
         if(s && Array.isArray(s.videos)) return {videos:s.videos, timerMin:Number(s.timerMin)||0,
           sound:s.sound!==false, adminHidden:s.adminHidden===true,
           pinHash:s.pinHash||'', adminStyle:s.adminStyle||'visible',
-          musicOn:s.musicOn===true, musicTrack:typeof s.musicTrack==='number'?s.musicTrack:0};
+          musicOn:s.musicOn===true, musicTrack:typeof s.musicTrack==='number'?s.musicTrack:0,
+          musicAuto:s.musicAuto!==false};
       }
     }catch(e){}
   }
   return {videos:[], timerMin:0, sound:true, adminHidden:false, pinHash:'', adminStyle:'visible',
-          musicOn:false, musicTrack:0};
+          musicOn:false, musicTrack:0, musicAuto:true};
 }
 let state=loadState();
 function saveState(){
@@ -697,6 +709,7 @@ function saveState(){
       timerMin:state.timerMin, sound:state.sound!==false, adminHidden:state.adminHidden===true,
       pinHash:state.pinHash||'', adminStyle:state.adminStyle||'visible',
       musicOn:state.musicOn===true, musicTrack:Number(state.musicTrack)||0,
+      musicAuto:state.musicAuto!==false,
       videos:state.videos.map(v=> v.type==='file' ? {...v,src:''} : v)
     }));
   }catch(e){}
@@ -714,6 +727,11 @@ function toast(msg){
 const views={home:'#view-home',videos:'#view-videos',games:'#view-games',balloon:'#view-balloon',
   memory:'#view-memory',animals:'#view-animals',player:'#view-player',pin:'#view-pin',settings:'#view-settings'};
 function show(name){
+  /* musik: nyalakan otomatis saat anak masuk game (sentuhan pasti sudah terjadi) */
+  if((name==='games'||name==='balloon'||name==='memory'||name==='animals') && state.musicAuto!==false){
+    if(state.musicOn!==true){ state.musicOn=true; saveState(); }
+    musicAsked=true; musicStart(); renderMusicBtn();
+  }
   if(name!=='balloon') stopBalloons();
   if(name!=='animals') stopAnimals();
   /* layar gelap (pemutar & game) tanpa hiasan langit */
@@ -859,7 +877,7 @@ function spawnBalloon(){
   b.addEventListener('click',(e)=>{
     e.stopPropagation();
     if(b.classList.contains('pop')) return;
-    b.classList.add('pop'); sfxPop();
+    b.classList.add('pop'); sfxBoing();
     balloonScore++; $('#balloonScore').textContent='⭐ '+balloonScore;
     setTimeout(()=>b.remove(),240);
   });
@@ -888,8 +906,8 @@ $('#memoryGrid').addEventListener('click',(e)=>{
     memFirst.classList.add('match'); c.classList.add('match');
     memFirst=null; memMatched++;
     $('#memoryScore').textContent='🧩 '+memMatched;
-    sfxDing();
-    if(memMatched===MEM_EMOJI.length){ setTimeout(()=>$('#memoryWin').classList.remove('hidden'),350); }
+    sfxCoin();
+    if(memMatched===MEM_EMOJI.length){ setTimeout(sfxTada,200); setTimeout(()=>$('#memoryWin').classList.remove('hidden'),350); }
   } else {
     memLock=true;
     const a=memFirst, b=c;
@@ -947,18 +965,18 @@ $('#animalField').addEventListener('click',(e)=>{
   if(emoji && animalTargets.includes(emoji) && !document.querySelector('#animalField .animal[data-e="'+emoji+'"].done')){
     btn.classList.remove('hint');
     btn.classList.add('done');
-    sfxDing();
+    sfxCoin(); if(animalFound===animalTargets.length-1) setTimeout(sfxSparkle,260);
     animalFound++;
     $('#animalScore').textContent='⭐ '+animalFound;
     const chip=document.querySelector('#animalList span[data-need="'+emoji+'"]');
     if(chip) chip.classList.add('done');
     clearTimeout(animalWait);
     nextAnimalQuestion();
-    if(animalFound>=animalTargets.length){ setTimeout(()=>$('#animalWin').classList.remove('hidden'),400); }
+    if(animalFound>=animalTargets.length){ setTimeout(sfxTada,220); setTimeout(()=>$('#animalWin').classList.remove('hidden'),400); }
   } else {
     /* hewan lain: cuma bergoyang, tidak menghukum */
     btn.style.animation='none'; void btn.offsetWidth; btn.style.animation='wobble .5s ease';
-    if(state.sound!==false) sfx(220,.10,'sine',.03,-60);
+    sfxWrong();
   }
 });
 function stopAnimals(){ clearInterval(animalLoop); animalLoop=null; clearTimeout(animalWait); }
@@ -1109,7 +1127,7 @@ async function exportBackup(){
     for(const r of recs){ if(r&&r.blob) media.push({id:r.id,type:r.blob.type||'video/mp4',data:await blobToB64(r.blob)}); }
   }catch(e){}
   const data={app:'biru-studio',v:3,state:{timerMin:state.timerMin,sound:state.sound,
-    musicOn:state.musicOn===true,musicTrack:Number(state.musicTrack)||0,
+    musicOn:state.musicOn===true,musicTrack:Number(state.musicTrack)||0,musicAuto:state.musicAuto!==false,
     videos:state.videos.map(v=> v.type==='file'?{...v,src:''}:v)},media};
   const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
@@ -1128,7 +1146,8 @@ async function importBackup(file){
   state={videos:data.state.videos||[],timerMin:Number(data.state.timerMin)||0,
     sound:data.state.sound!==false, adminHidden:data.state.adminHidden===true,
     pinHash:data.state.pinHash||'', adminStyle:data.state.adminStyle||'visible',
-    musicOn:data.state.musicOn===true, musicTrack:Number(data.state.musicTrack)||0};
+    musicOn:data.state.musicOn===true, musicTrack:Number(data.state.musicTrack)||0,
+    musicAuto:data.state.musicAuto!==false};
   saveState(); renderVideos(); msg.textContent='Dipulihkan ✅'; toast('Dipulihkan');
 }
 
@@ -1212,6 +1231,7 @@ $('#gameMemory').addEventListener('click',()=>{ sfxTap(); startMemory(); });
 $('#gameAnimals').addEventListener('click',()=>{ sfxTap(); startAnimals(); });
 $('#btnAnimalsExit').addEventListener('click',()=>{ sfxTap(); stopAnimals(); show('games'); });
 $('#btnAnimalsAgain').addEventListener('click',()=>{ sfxTap(); startAnimals(); });
+$('#btnMemoryAgain').addEventListener('click',()=>{ sfxTap(); startMemory(); });
 $('#btnAnimalsHome').addEventListener('click',()=>{ sfxTap(); $('#animalWin').classList.add('hidden'); stopAnimals(); show('games'); });
 $('#btnMemoryHome').addEventListener('click',()=>{ sfxTap(); $('#memoryWin').classList.add('hidden'); show('games'); });
 $('#btnMemoryExit').addEventListener('click',()=>{ sfxTap(); show('games'); });
@@ -1327,6 +1347,7 @@ function renderMusicSettings(){
     `<button class="mode ${i===musicTrack()?'on':''}" data-music="${i}" style="flex:1 1 30%">${i===musicTrack()?'▶ ':''}${m.name}</button>`
   ).join('');
   const sw=$('#musicSwitch'); if(sw) sw.classList.toggle('on',state.musicOn===true);
+  const asw=$('#musicAutoSwitch'); if(asw) asw.classList.toggle('on',state.musicAuto!==false);
   const st=$('#musicMsg'); if(st) st.textContent = state.musicOn===true
     ? 'Musik menyala: '+MUSIC[musicTrack()].name
     : 'Musik sedang mati.';
@@ -1372,6 +1393,12 @@ paintMascots(); renderEmojis(); renderMode(); renderHome(); renderVideos(); load
 renderMusicBtn(); renderMusicSettings();
 const msw=$('#musicSwitch');
 if(msw) msw.addEventListener('click',()=>{ musicAsked=true; musicToggle(); });
+const masw=$('#musicAutoSwitch');
+if(masw) masw.addEventListener('click',()=>{
+  state.musicAuto = state.musicAuto===false;
+  saveState(); sfxTap(); renderMusicSettings();
+  toast(state.musicAuto?'Musik nyala sendiri saat buka game':'Musik hanya lewat tombol 🎵');
+});
 /* browser hanya mengizinkan suara setelah pengguna menyentuh layar */
 ['pointerdown','touchstart','keydown'].forEach(ev=>
   document.addEventListener(ev,()=>{ if(!musicAsked){ musicAsked=true; musicStart(); } },{once:true,passive:true}));
