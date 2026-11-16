@@ -1247,5 +1247,12 @@ paintMascots(); renderEmojis(); renderMode(); renderHome(); renderVideos();
 ensureTimer(); renderTimerPill();
 if(navigator.storage&&navigator.storage.persist){ navigator.storage.persist().catch(()=>{}); }
 </script>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="BIRU STUDIO">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0B2A44">
+<script src="app.js"></script>
 </body>
 </html>
