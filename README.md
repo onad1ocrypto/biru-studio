@@ -22,3 +22,5 @@ Static site. Di Vercel: framework **Other**, build command kosong, output direct
 - Tombol admin bisa disembunyikan dari pengaturan (buka dengan mengetuk logo Biru 3× lalu PIN).
 - PIN bawaan: `1234`
 - Video yang di-upload dari file disimpan di perangkat; video YouTube butuh internet.
+
+<!-- deploy: static site, tanpa build -->
