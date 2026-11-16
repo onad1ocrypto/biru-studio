@@ -183,8 +183,14 @@
   .afield{position:relative;max-width:900px;margin:clamp(8px,2vw,20px) auto 0;display:grid;
     grid-template-columns:repeat(auto-fill,minmax(min(30vw,150px),1fr));gap:clamp(10px,2.4vw,18px)}
   .animal{aspect-ratio:1/1;border-radius:28px;background:rgba(255,255,255,.10);box-shadow:inset 0 0 0 2px rgba(255,255,255,.10);
-    display:grid;place-items:center;font-size:clamp(44px,11vw,76px);transition:transform .12s ease,background .18s ease;
+    display:grid;place-items:center;overflow:hidden;padding:0;transition:transform .12s ease,background .18s ease;
     animation:popIn .28s ease both}
+  .aphoto{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none}
+  .animal.done .aphoto{opacity:.55;filter:saturate(.7)}
+  .askbar .q .aphoto{width:38px;height:38px;border-radius:12px;object-fit:cover;vertical-align:middle;margin:0 4px;
+    box-shadow:0 0 0 2px rgba(255,255,255,.55)}
+  .askbar .items .aphoto{width:clamp(30px,7vw,38px);height:clamp(30px,7vw,38px);border-radius:11px;object-fit:cover;
+    box-shadow:0 0 0 2px rgba(255,255,255,.35)}
   .animal:active{transform:scale(.93)}
   .animal.done{background:rgba(142,230,176,.28);box-shadow:inset 0 0 0 3px rgba(142,230,176,.7);transform:scale(.9)}
   .animal.hint{background:rgba(255,217,61,.22);box-shadow:inset 0 0 0 3px rgba(255,217,61,.75);animation:popIn .28s ease both,wobble .7s ease infinite}
@@ -568,9 +574,15 @@ const BALLOON_COLORS=[
   'radial-gradient(circle at 32% 28%,#D9C8FF,#9B7BF0)'
 ];
 const MEM_EMOJI=['🐳','🐣','🦖','🌈'];
-const ANIMAL_EMOJI=['🐣','🐳','🦖','🐊','🦋','🐙','🐝','🦁','🐸','🐢','🐰','🦉'];
-const ANIMAL_NAMES={'🐣':'Anak Ayam','🐳':'Paus','🦖':'Dino','🐊':'Buaya','🦋':'Kupu-kupu','🐙':'Gurita',
-  '🐝':'Lebah','🦁':'Singa','🐸':'Katak','🐢':'Kura-kura','🐰':'Kelinci','🦉':'Burung Hantu'};
+/* hewan memakai FOTO asli (bukan emoji). kunci = nama berkas di animals/ */
+const ANIMALS=[
+  {k:'chick',name:'Anak Ayam'},{k:'whale',name:'Paus'},{k:'croc',name:'Buaya'},
+  {k:'butterfly',name:'Kupu-kupu'},{k:'octopus',name:'Gurita'},{k:'bee',name:'Lebah'},
+  {k:'lion',name:'Singa'},{k:'frog',name:'Katak'},{k:'turtle',name:'Kura-kura'},{k:'rabbit',name:'Kelinci'}
+];
+const ANIMAL_KEYS=ANIMALS.map(a=>a.k);
+const ANIMAL_NAMES={}; ANIMALS.forEach(a=>{ANIMAL_NAMES[a.k]=a.name;});
+function animalImg(k){ return '<img class="aphoto" src="animals/'+k+'.jpg" alt="'+(ANIMAL_NAMES[k]||'Hewan')+'" draggable="false"/>'; }
 
 /* ---------- maskot ---------- */
 function mascot(mood,size){
@@ -865,17 +877,17 @@ $('#memoryGrid').addEventListener('click',(e)=>{
 let animalTargets=[], animalFound=0, animalRaf=null, animalWait=0;
 function startAnimals(){
   const total=6;
-  animalTargets=[...ANIMAL_EMOJI].sort(()=>Math.random()-0.5).slice(0,total);
+  animalTargets=[...ANIMAL_KEYS].sort(()=>Math.random()-0.5).slice(0,total);
   animalFound=0;
   $('#animalWin').classList.add('hidden');
   $('#animalScore').textContent='⭐ 0';
   const field=$('#animalField');
   const tiles=[...animalTargets.map(e=>({e,hit:false}))];
   /* tambah 3 pengalih perhatian supaya anak benar-benar memilih */
-  const decoys=[...ANIMAL_EMOJI].filter(e=>!animalTargets.includes(e)).slice(0,3);
+  const decoys=[...ANIMAL_KEYS].filter(e=>!animalTargets.includes(e)).slice(0,3);
   decoys.forEach(e=>tiles.push({e,hit:true,decoy:true}));
   tiles.sort(()=>Math.random()-0.5);
-  field.innerHTML=tiles.map((t,i)=>`<button class="animal" data-e="${t.e}" data-i="${i}" aria-label="${ANIMAL_NAMES[t.e]||'Hewan'}">${t.e}</button>`).join('');
+  field.innerHTML=tiles.map((t,i)=>`<button class="animal" data-e="${t.e}" data-i="${i}" aria-label="${ANIMAL_NAMES[t.e]||'Hewan'}">${animalImg(t.e)}</button>`).join('');
   renderAnimalList();
   nextAnimalQuestion();
   show('animals');
@@ -884,13 +896,13 @@ function startAnimals(){
 }
 let animalLoop=null;
 function renderAnimalList(){
-  $('#animalList').innerHTML=animalTargets.map(e=>`<span data-need="${e}">${e}</span>`).join('');
+  $('#animalList').innerHTML=animalTargets.map(e=>`<span data-need="${e}">${animalImg(e)}</span>`).join('');
 }
 function nextAnimalQuestion(){
   const next=animalTargets.find(e=>!animalDone(e));
   const q=$('#animalQuestion');
   if(!next){ q.textContent='Semua sudah diketuk! 🎉'; return; }
-  q.innerHTML='Ketuk: <span style="font-size:1.4em">'+next+'</span> &nbsp;('+(ANIMAL_NAMES[next]||'')+')';
+  q.innerHTML='Ketuk hewan ini: '+animalImg(next)+' <b>'+(ANIMAL_NAMES[next]||'')+'</b>';
   /* sorot hewan yang dicari setelah 2,5 detik */
   clearTimeout(animalWait);
   animalWait=setTimeout(()=>{
