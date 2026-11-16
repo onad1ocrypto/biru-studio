@@ -48,8 +48,14 @@
     color:var(--navy);text-shadow:0 2px 0 #fff,0 4px 0 rgba(31,155,240,.18)}
   .hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto}
   .timerpill{background:#fff;border-radius:999px;padding:9px 15px;font-weight:800;font-size:.95rem;box-shadow:var(--sh);white-space:nowrap}
-  .lockbtn{width:52px;height:52px;border-radius:18px;background:#fff;box-shadow:var(--sh);font-size:20px}
-  .lockbtn:active{transform:scale(.95)}
+  /* tombol admin: kecil + samar, supaya tidak menarik anak */
+  .lockbtn{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.42);box-shadow:none;
+    border:1px solid rgba(16,50,75,.10);font-size:12px;color:rgba(16,50,75,.42);
+    display:grid;place-items:center;line-height:1;transition:background .15s ease}
+  .lockbtn:active{background:rgba(255,255,255,.85);transform:scale(.94)}
+  .lockbtn.style-dot{background:rgba(16,50,75,.16);border-color:transparent;color:transparent;font-size:0}
+  .lockbtn.style-dot::after{content:"";width:6px;height:6px;border-radius:50%;background:rgba(16,50,75,.35)}
+  .lockbtn.style-invisible{opacity:0;pointer-events:none;visibility:hidden}
 
   /* ---------- dua menu utama ---------- */
   .menuGrid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,3vw,22px);margin-top:clamp(6px,2vw,16px)}
@@ -256,14 +262,6 @@
     .poster,.menuTile,.gameTile,.tapbadge,.switch,.mcard{transition:none}
   }
 </style>
-<link rel="manifest" href="manifest.webmanifest"/>
-<meta name="theme-color" content="#1F9BF0"/>
-<link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="BIRU STUDIO"/>
-<meta name="description" content="BIRU STUDIO — video dan game untuk anak. Tanpa iklan. BY SASAM"/>
-<script src="app.js"></script>
 </head>
 <body>
 
@@ -280,7 +278,7 @@
     </div>
     <div class="hdr-right">
       <span id="timerPill" class="timerpill hidden">⏳ <b id="timerTxt">15 mnt</b></span>
-      <button id="btnLock" class="lockbtn" aria-label="Pengaturan orang tua">🔒</button>
+      <button id="btnLock" class="lockbtn" aria-label="Orang tua">🔒</button>
     </div>
   </header>
 
@@ -424,7 +422,7 @@
       <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
       <button class="key" data-key="del">⌫</button><button class="key" data-key="0">0</button><button class="key" data-key="ok">✓</button>
     </div>
-    <p class="pinhint">PIN demo: <b>1234</b></p>
+    <p class="pinhint" id="pinHintLine">PIN bawaan: <b>1234</b> — ganti di pengaturan.</p>
     <button class="btn" id="btnPinCancel" style="margin-top:8px">Batal</button>
   </div>
 </section>
@@ -449,16 +447,28 @@
     <p class="muted" id="capacityMsg" style="font-size:.8rem;margin:12px 0 0;font-weight:700"></p>
   </div>
   <div class="panel">
-    <h3>🔒 Tombol admin</h3>
-    <div class="toggle">
-      <div>
-        <b style="font-size:.94rem">Sembunyikan tombol 🔒 di layar utama</b>
-        <div class="muted" style="font-size:.8rem;font-weight:700;line-height:1.4;margin-top:2px">
-          Bila disembunyikan, buka pengaturan dengan mengetuk logo Biru <b>3×</b> lalu masukkan PIN.
-        </div>
-      </div>
-      <button class="switch" id="adminHideSwitch" aria-label="Sembunyikan tombol admin"></button>
+    <h3>🔑 PIN orang tua</h3>
+    <p class="muted" style="font-size:.82rem;font-weight:700;margin:0 0 10px">Ganti PIN supaya anak tidak bisa menebak.</p>
+    <div class="filerow" style="gap:8px">
+      <input id="pinOld" type="password" inputmode="numeric" maxlength="8" placeholder="PIN lama"
+             style="width:110px;flex:0 0 auto;text-align:center"/>
+      <input id="pinNew" type="password" inputmode="numeric" maxlength="8" placeholder="PIN baru"
+             style="width:110px;flex:0 0 auto;text-align:center"/>
+      <button class="btn brand" id="btnChangePin">Ganti PIN</button>
     </div>
+    <p class="muted" id="pinMsg" style="font-size:.8rem;margin:10px 0 0;font-weight:700"></p>
+  </div>
+  <div class="panel">
+    <h3>👀 Tombol admin</h3>
+    <p class="muted" style="font-size:.8rem;font-weight:700;margin:0 0 10px;line-height:1.45">
+      Tombol kecil di pojok kanan atas. Bisa juga dibuka dengan mengetuk <b>logo Biru 3×</b>.
+    </p>
+    <div class="moderow" style="flex-wrap:wrap">
+      <button class="mode" id="btnStyleVisible" style="flex:1 1 30%">👁 Tampil</button>
+      <button class="mode" id="btnStyleDot" style="flex:1 1 30%">• Titik</button>
+      <button class="mode" id="btnStyleHidden" style="flex:1 1 30%">🚫 Hilang</button>
+    </div>
+    <p class="muted" id="styleMsg" style="font-size:.8rem;margin:10px 0 0;font-weight:700"></p>
   </div>
   <div class="panel">
     <h3>💾 Backup</h3>
@@ -492,7 +502,7 @@
 const $=(s)=>document.querySelector(s);
 const $$=(s)=>[...document.querySelectorAll(s)];
 const KEY='biru.v2';
-const PIN='1234';
+const DEFAULT_PIN='1234';   /* hanya dipakai bila PIN belum pernah diganti */
 const PAL=[
   'linear-gradient(160deg,#BFE9FF,#8FD3FF)',
   'linear-gradient(160deg,#FFE6A6,#FFC96B)',
@@ -587,11 +597,12 @@ function loadState(){
       if(raw){
         const s=JSON.parse(raw);
         if(s && Array.isArray(s.videos)) return {videos:s.videos, timerMin:Number(s.timerMin)||0,
-          sound:s.sound!==false, adminHidden:s.adminHidden===true};
+          sound:s.sound!==false, adminHidden:s.adminHidden===true,
+          pinHash:s.pinHash||'', adminStyle:s.adminStyle||'visible'};
       }
     }catch(e){}
   }
-  return {videos:[], timerMin:0, sound:true, adminHidden:false};
+  return {videos:[], timerMin:0, sound:true, adminHidden:false, pinHash:'', adminStyle:'visible'};
 }
 let state=loadState();
 function saveState(){
@@ -599,6 +610,7 @@ function saveState(){
   try{
     store.setItem(KEY, JSON.stringify({
       timerMin:state.timerMin, sound:state.sound!==false, adminHidden:state.adminHidden===true,
+      pinHash:state.pinHash||'', adminStyle:state.adminStyle||'visible',
       videos:state.videos.map(v=> v.type==='file' ? {...v,src:''} : v)
     }));
   }catch(e){}
@@ -627,7 +639,7 @@ function show(name){
 /* ---------- layar utama ---------- */
 function renderHome(){
   $('#videoCount').textContent = state.videos.length ? (state.videos.length+' video') : 'kosong';
-  $('#btnLock').classList.toggle('hidden', state.adminHidden===true);
+  applyAdminStyle();
 }
 
 /* ---------- menu video ---------- */
@@ -822,6 +834,27 @@ setInterval(()=>{
 },5000);
 
 /* ---------- PIN ---------- */
+/* PIN disimpan sebagai hash (SHA-256), bukan teks biasa */
+async function sha256(txt){
+  if(!(window.crypto&&crypto.subtle)) return 'plain:'+txt;
+  try{
+    const buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode('biru|'+txt));
+    return 'sha:'+[...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+  }catch(e){ return 'plain:'+txt; }
+}
+async function pinMatches(input){
+  const stored=state.pinHash||'';
+  if(!stored) return input==='1234';           /* PIN bawaan */
+  const h=await sha256(input);
+  return h===stored;
+}
+function applyAdminStyle(){
+  const btn=$('#btnLock'); if(!btn) return;
+  const style=state.adminStyle|| (state.adminHidden===true?'hidden':'visible');
+  btn.classList.remove('hidden','style-dot','style-invisible');
+  if(style==='hidden'||state.adminHidden===true){ btn.classList.add('style-invisible'); }
+  else if(style==='dot'){ btn.classList.add('style-dot'); }
+}
 let pinBuf='', pendingAction=null;
 function renderPin(){ $$('#pinDots i').forEach((d,i)=>d.classList.toggle('on',i<pinBuf.length)); }
 function pressKey(k){
@@ -829,9 +862,10 @@ function pressKey(k){
   if(k==='ok'){ checkPin(); return; }
   if(pinBuf.length<4){ pinBuf+=k; renderPin(); if(pinBuf.length===4) setTimeout(checkPin,140); }
 }
-function checkPin(){
+async function checkPin(){
   const c=$('#pinCard');
-  if(pinBuf===PIN){
+  const ok=await pinMatches(pinBuf);
+  if(ok){
     pinBuf=''; renderPin(); breakActive=false;
     $('#breakOverlay').classList.add('hidden');
     sfxOpen();
@@ -847,7 +881,9 @@ function checkPin(){
 function openSettings(){
   $('#timerInput').value=state.timerMin?String(state.timerMin):'';
   $('#soundSwitch').classList.toggle('on',state.sound!==false);
-  $('#adminHideSwitch').classList.toggle('on',state.adminHidden===true);
+  renderAdminStyleButtons();
+  $('#pinMsg').textContent = state.pinHash ? 'PIN sudah diganti dari bawaan.' : 'Masih memakai PIN bawaan 1234.';
+  $('#pinOld').value=''; $('#pinNew').value='';
   refreshCap();
   show('settings');
 }
@@ -935,7 +971,8 @@ async function importBackup(file){
   try{ await idbClear(); }catch(e){}
   for(const m of (data.media||[])){ try{ await idbPut({id:m.id,blob:b64ToBlob(m.data,m.type)}); }catch(e){} }
   state={videos:data.state.videos||[],timerMin:Number(data.state.timerMin)||0,
-    sound:data.state.sound!==false, adminHidden:data.state.adminHidden===true};
+    sound:data.state.sound!==false, adminHidden:data.state.adminHidden===true,
+    pinHash:data.state.pinHash||'', adminStyle:data.state.adminStyle||'visible'};
   saveState(); renderVideos(); msg.textContent='Dipulihkan ✅'; toast('Dipulihkan');
 }
 
@@ -944,7 +981,11 @@ $('#tileVideo').addEventListener('click',()=>{ sfxTap(); openVideos(); });
 $('#tileGame').addEventListener('click',()=>{ sfxTap(); show('games'); });
 $('#btnVideosBack').addEventListener('click',()=>{ sfxTap(); adminMode=false; stopStage(); renderHome(); show('home'); });
 $('#btnGamesBack').addEventListener('click',()=>{ sfxTap(); show('home'); });
-$('#btnLock').addEventListener('click',()=>{ sfxTap(); askPin(openSettings); });
+$('#btnLock').addEventListener('click',()=>{
+  const style=state.adminStyle||(state.adminHidden===true?'hidden':'visible');
+  if(style==='hidden') return;          /* saat disembunyikan: tombol benar-benar mati */
+  sfxTap(); askPin(openSettings);
+});
 /* pintu rahasia: ketuk logo Biru 3x -> PIN (dipakai saat tombol admin disembunyikan) */
 let logoTaps=[];
 $('#secretDoor').addEventListener('click',()=>{
@@ -1051,12 +1092,33 @@ $('#soundSwitch').addEventListener('click',()=>{
   $('#soundSwitch').classList.toggle('on',state.sound);
   saveState(); if(state.sound) sfxTap();
 });
-$('#adminHideSwitch').addEventListener('click',()=>{
-  state.adminHidden = state.adminHidden!==true;
-  $('#adminHideSwitch').classList.toggle('on',state.adminHidden);
-  saveState(); renderHome();
-  toast(state.adminHidden ? 'Tombol admin disembunyikan' : 'Tombol admin ditampilkan');
-  sfxTap();
+function renderAdminStyleButtons(){
+  const style=state.adminStyle|| (state.adminHidden===true?'hidden':'visible');
+  $('#btnStyleVisible').classList.toggle('on',style==='visible');
+  $('#btnStyleDot').classList.toggle('on',style==='dot');
+  $('#btnStyleHidden').classList.toggle('on',style==='hidden');
+}
+function setAdminStyle(style){
+  state.adminStyle=style;
+  state.adminHidden=(style==='hidden');
+  saveState(); applyAdminStyle(); renderAdminStyleButtons();
+  const msg={visible:'Tombol admin tampil samar di pojok.',dot:'Tombol admin jadi titik kecil.',
+             hidden:'Tombol admin hilang — buka lewat logo Biru 3×.'}[style];
+  $('#styleMsg').textContent=msg; toast(msg); sfxTap();
+}
+$('#btnStyleVisible').addEventListener('click',()=>setAdminStyle('visible'));
+$('#btnStyleDot').addEventListener('click',()=>setAdminStyle('dot'));
+$('#btnStyleHidden').addEventListener('click',()=>setAdminStyle('hidden'));
+$('#btnChangePin').addEventListener('click',async()=>{
+  const msg=$('#pinMsg');
+  const oldPin=$('#pinOld').value.trim(), newPin=$('#pinNew').value.trim();
+  if(!(await pinMatches(oldPin))){ msg.textContent='PIN lama salah.'; return; }
+  if(!/^\d{4,8}$/.test(newPin)){ msg.textContent='PIN baru harus 4–8 angka.'; return; }
+  state.pinHash=await sha256(newPin);
+  saveState();
+  $('#pinOld').value=''; $('#pinNew').value='';
+  msg.textContent='PIN berhasil diganti ✅';
+  toast('PIN baru tersimpan'); sfxDing();
 });
 $('#btnExport').addEventListener('click',exportBackup);
 $('#fImport').addEventListener('change',async(e)=>{ await importBackup(e.target.files&&e.target.files[0]); e.target.value=''; });
