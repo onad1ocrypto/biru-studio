@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<title>BIRU STUDIO</title>
+<style>
+  :root{
+    --ink:#10324B; --muted:#5B7A93;
+    --blue:#1F9BF0; --blue-d:#0B7FCF; --navy:#0B2A44;
+    --sh:0 14px 30px rgba(16,50,75,.14),0 3px 8px rgba(16,50,75,.08);
+    --sh-big:0 22px 44px rgba(16,50,75,.20),0 4px 10px rgba(16,50,75,.10);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%}
+  body{
+    font-family:"Baloo 2","Nunito","Quicksand","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;
+    color:var(--ink); background:linear-gradient(180deg,#E9F7FF,#CFEBFF 72%,#BEE1FB);
+    -webkit-font-smoothing:antialiased; overflow-x:hidden;
+  }
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+  .hidden{display:none!important}
+  .muted{color:var(--muted)}
+  .kidish{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+  .view{position:relative;z-index:2;max-width:1080px;margin:0 auto;padding:14px clamp(10px,3vw,22px) 34px}
+
+  .wall-deco{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+  body.darkview .wall-deco{display:none}
+  .sunny{position:absolute;top:-80px;right:-70px;width:240px;height:240px;border-radius:50%;
+    background:radial-gradient(circle,#FFEAA0 0%,#FFD93D 55%,rgba(255,217,61,0) 72%);opacity:.8}
+  .cloud{position:absolute;background:#fff;border-radius:999px;opacity:.85;filter:drop-shadow(0 8px 14px rgba(31,155,240,.10))}
+  .cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+  .c1{width:140px;height:42px;top:110px;left:-170px;animation:drift 52s linear infinite}
+  .c1::before{width:60px;height:60px;top:-28px;left:20px}
+  .c1::after{width:44px;height:44px;top:-18px;left:74px}
+  .c2{width:100px;height:32px;top:340px;left:-130px;animation:drift 74s linear infinite;animation-delay:-22s;opacity:.6}
+  .c2::before{width:44px;height:44px;top:-20px;left:14px}
+  .c2::after{width:32px;height:32px;top:-12px;left:54px}
+  @keyframes drift{to{transform:translateX(calc(100vw + 300px))}}
+
+  /* ---------- kepala ---------- */
+  .brandbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 2px 14px}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .brand .brandtap{cursor:default;-webkit-tap-highlight-color:transparent}
+  .mascot{flex:0 0 auto;animation:bob 3.4s ease-in-out infinite;filter:drop-shadow(0 8px 12px rgba(31,155,240,.22))}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(-1.5deg)}50%{transform:translateY(-7px) rotate(2deg)}}
+  .brand h1{margin:0;font-size:clamp(1.5rem,4vw,2.2rem);letter-spacing:.7px;line-height:1;
+    color:var(--navy);text-shadow:0 2px 0 #fff,0 4px 0 rgba(31,155,240,.18)}
+  .hdr-right{display:flex;align-items:center;gap:10px;margin-left:auto}
+  .timerpill{background:#fff;border-radius:999px;padding:9px 15px;font-weight:800;font-size:.95rem;box-shadow:var(--sh);white-space:nowrap}
+  .lockbtn{width:52px;height:52px;border-radius:18px;background:#fff;box-shadow:var(--sh);font-size:20px}
+  .lockbtn:active{transform:scale(.95)}
+
+  /* ---------- dua menu utama ---------- */
+  .menuGrid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,3vw,22px);margin-top:clamp(6px,2vw,16px)}
+  .menuTile{position:relative;border-radius:34px;padding:clamp(16px,4vw,28px);min-height:clamp(230px,42vw,380px);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    box-shadow:var(--sh-big);overflow:hidden;transition:transform .16s ease}
+  .menuTile::after{content:"";position:absolute;left:-16%;right:-16%;bottom:-52%;height:70%;
+    background:rgba(255,255,255,.22);transform:rotate(-7deg);border-radius:50%}
+  .menuTile:active{transform:scale(.965)}
+  .menuTile .icon{font-size:clamp(64px,17vw,140px);line-height:1;position:relative;z-index:1;
+    filter:drop-shadow(0 10px 16px rgba(16,50,75,.22))}
+  .menuTile .name{position:relative;z-index:1;font-size:clamp(1.4rem,4.4vw,2.4rem);font-weight:800;
+    letter-spacing:1.5px;color:var(--navy);text-shadow:0 2px 0 rgba(255,255,255,.75)}
+  .menuTile.video{background:linear-gradient(160deg,#9FDBFF,#5FB8F5)}
+  .menuTile.game{background:linear-gradient(160deg,#FFDE8A,#FFB65C)}
+  .menuTile .count{position:relative;z-index:1;font-weight:800;color:rgba(11,42,68,.62);font-size:clamp(.85rem,2.4vw,1rem)}
+
+  .license{text-align:center;color:var(--muted);font-size:.8rem;font-weight:800;letter-spacing:1.6px;margin-top:26px}
+
+  /* ---------- sub-header ---------- */
+  .subhead{display:flex;align-items:center;gap:12px;padding:4px 2px 14px}
+  .backbtn{width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:var(--sh);font-size:22px;flex:0 0 auto}
+  .backbtn:active{transform:scale(.94)}
+  .subhead h2{margin:0;font-size:clamp(1.25rem,3.4vw,1.7rem);letter-spacing:1px}
+  .subhead .right{margin-left:auto;display:flex;gap:10px;align-items:center}
+  .donebtn{background:linear-gradient(160deg,#4FC3F7,#1F9BF0);color:#fff;padding:12px 18px;border-radius:16px;
+    font-weight:800;box-shadow:var(--sh)}
+
+  /* ---------- grid poster video ---------- */
+  .posters{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(44vw,186px),1fr));gap:clamp(10px,2vw,16px)}
+  .poster{position:relative;background:#fff;border-radius:22px;padding:8px 8px 0;text-align:left;box-shadow:var(--sh);
+    transform:rotate(var(--tilt,0deg));transition:transform .16s ease,box-shadow .16s ease;
+    display:flex;flex-direction:column;overflow:hidden}
+  .poster:hover{transform:rotate(0) translateY(-5px) scale(1.02);box-shadow:var(--sh-big);z-index:3}
+  .poster:active{transform:rotate(0) scale(.96)}
+  .poster .tape{position:absolute;top:-2px;left:50%;transform:translateX(-50%) rotate(-2deg);width:52px;height:15px;
+    background:rgba(255,240,170,.85);border-radius:3px;box-shadow:0 2px 4px rgba(16,50,75,.10);z-index:2}
+  .poster .pic{aspect-ratio:1/.92;border-radius:16px;display:grid;place-items:center;position:relative;overflow:hidden}
+  .poster .pic::after{content:"";position:absolute;left:-14%;right:-14%;bottom:-50%;height:74%;
+    background:rgba(255,255,255,.24);transform:rotate(-7deg);border-radius:50%}
+  .poster .em{position:relative;z-index:1;font-size:clamp(44px,9.5vw,68px);filter:drop-shadow(0 6px 10px rgba(16,50,75,.18))}
+  .poster .play{position:absolute;right:9px;bottom:9px;width:34px;height:34px;border-radius:50%;
+    background:rgba(255,255,255,.96);display:grid;place-items:center;font-size:13px;z-index:3;
+    box-shadow:0 4px 10px rgba(16,50,75,.24)}
+  .poster .cap{padding:9px 8px 11px;font-weight:800;font-size:clamp(.8rem,1.9vw,.95rem);line-height:1.18;text-align:center;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.5em}
+  .poster .del{position:absolute;top:8px;right:8px;width:34px;height:34px;border-radius:50%;background:#FFECEC;z-index:4;
+    display:none;place-items:center;font-size:15px;box-shadow:0 3px 8px rgba(16,50,75,.2)}
+  .poster.adding .del{display:grid}
+
+  .poster.add{border:3px dashed #9FD4F5;background:rgba(255,255,255,.55);box-shadow:none;justify-content:center;min-height:150px}
+  .poster.add .pic{background:transparent;aspect-ratio:auto;min-height:64px;font-size:clamp(34px,8vw,50px);color:var(--blue-d)}
+  .poster.add .cap{color:var(--blue-d)}
+
+  .emptybox{text-align:center;background:rgba(255,255,255,.78);border-radius:28px;box-shadow:var(--sh);padding:34px 20px}
+  .emptybox h3{margin:10px 0 4px;font-size:1.1rem}
+  .emptybox p{margin:0;color:var(--muted);font-weight:700;font-size:.9rem}
+
+  /* ---------- panel admin di dalam menu video ---------- */
+  .adminpanel{background:#fff;border-radius:26px;box-shadow:var(--sh);padding:18px;margin-bottom:16px}
+  .adminpanel h3{margin:0 0 12px;font-size:1rem}
+  .field{display:grid;gap:6px;margin-bottom:11px}
+  .field>label{font-size:.8rem;font-weight:800;color:var(--muted)}
+  input[type=text],input[type=url],input[type=number]{border:2px solid #E4EEF6;border-radius:14px;padding:11px 13px;
+    font:inherit;background:#F8FBFE;width:100%;color:var(--ink)}
+  input:focus{outline:none;border-color:var(--blue);background:#fff}
+  .emrow{display:flex;flex-wrap:wrap;gap:7px}
+  .emopt{width:42px;height:42px;border-radius:12px;box-shadow:inset 0 0 0 2px #E4EEF6;background:#fff;font-size:20px}
+  .emopt.sel{box-shadow:inset 0 0 0 3px var(--blue);background:#EAF6FF}
+  .moderow{display:flex;gap:8px;margin-bottom:10px}
+  .mode{flex:1;border-radius:13px;padding:10px;font-weight:800;color:var(--muted);font-size:.9rem;
+    box-shadow:inset 0 0 0 2px #E4EEF6;background:#fff}
+  .mode.on{color:#0B6F96;background:#EAF8FF;box-shadow:inset 0 0 0 2px #7CCBF0}
+  .filerow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .filebtn{display:inline-block;background:#EAF8FF;box-shadow:inset 0 0 0 2px #BFE7FA;color:#0B6F96;font-weight:800;
+    padding:10px 15px;border-radius:13px;cursor:pointer;font-size:.9rem}
+  .fname{font-size:.84rem;color:var(--muted);font-weight:700}
+  .err{color:#D64545;font-size:.85rem;font-weight:800;min-height:1.1em;margin:2px 0 10px}
+  .btn{border-radius:16px;padding:12px 18px;font-weight:800;background:#fff;box-shadow:var(--sh)}
+  .btn.brand{background:linear-gradient(160deg,#4FC3F7,#1F9BF0);color:#fff}
+  .btn:active{transform:scale(.98)}
+
+  /* ---------- game ---------- */
+  .gameGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(44vw,220px),1fr));gap:clamp(12px,3vw,18px)}
+  .gameTile{border-radius:30px;padding:22px 16px;min-height:clamp(170px,32vw,230px);display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:8px;box-shadow:var(--sh-big);position:relative;overflow:hidden;
+    transition:transform .16s ease}
+  .gameTile::after{content:"";position:absolute;left:-16%;right:-16%;bottom:-52%;height:66%;
+    background:rgba(255,255,255,.22);transform:rotate(-7deg);border-radius:50%}
+  .gameTile:active{transform:scale(.96)}
+  .gameTile .icon{font-size:clamp(54px,13vw,84px);position:relative;z-index:1;filter:drop-shadow(0 8px 12px rgba(16,50,75,.2))}
+  .gameTile .name{position:relative;z-index:1;font-weight:800;font-size:clamp(.95rem,2.6vw,1.15rem);color:var(--navy)}
+  .gameTile.g1{background:linear-gradient(160deg,#FFB3C7,#FF7FA5)}
+  .gameTile.g2{background:linear-gradient(160deg,#C9B6FF,#9E86F5)}
+
+  #view-balloon,#view-memory{max-width:none;min-height:100vh;padding:12px clamp(10px,3vw,22px) 24px;
+    background:radial-gradient(1200px 600px at 50% -10%,#12466F 0%,#0B2A44 55%,#071C2E 100%);color:#EAF6FF}
+  .gbar{display:flex;align-items:center;gap:12px;max-width:1000px;margin:0 auto 8px}
+  .gbar .score{margin-left:auto;background:rgba(255,255,255,.14);border-radius:999px;padding:10px 18px;
+    font-weight:800;font-size:clamp(.95rem,2.4vw,1.1rem)}
+  .gfield{position:relative;max-width:1000px;height:min(70vh,620px);margin:8px auto 0;border-radius:26px;overflow:hidden;
+    background:linear-gradient(180deg,rgba(255,255,255,.07),rgba(255,255,255,.02));box-shadow:inset 0 0 0 2px rgba(255,255,255,.08)}
+  .balloon{position:absolute;bottom:-140px;width:clamp(58px,11vw,80px);height:clamp(70px,13vw,98px);
+    border-radius:50% 50% 46% 46%/58% 58% 42% 42%;animation:rise var(--dur) linear forwards;
+    box-shadow:inset -7px -9px 16px rgba(0,0,0,.14),inset 7px 7px 14px rgba(255,255,255,.45)}
+  .balloon::after{content:"";position:absolute;left:50%;bottom:-24px;width:2px;height:26px;
+    background:rgba(255,255,255,.55);transform:translateX(-50%)}
+  .balloon.pop{animation:none;transform:scale(1.45);opacity:0;transition:transform .22s ease,opacity .22s ease}
+  @keyframes rise{to{transform:translateY(-120vh) rotate(5deg)}}
+
+  .mgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(8px,2vw,14px);max-width:640px;margin:clamp(10px,3vw,24px) auto 0}
+  .mcard{aspect-ratio:1/1.08;border-radius:20px;background:linear-gradient(160deg,#2C6E9E,#1B4F76);
+    display:grid;place-items:center;font-size:clamp(30px,7.5vw,46px);box-shadow:inset 0 0 0 3px rgba(255,255,255,.12);
+    transform:rotateY(0);transition:transform .18s ease,background .18s ease}
+  .mcard::before{content:"?";font-weight:800;color:rgba(255,255,255,.35);font-size:clamp(20px,5vw,30px)}
+  .mcard.up{background:linear-gradient(160deg,#FFE9A8,#FFD25C);box-shadow:inset 0 0 0 3px #fff}
+  .mcard.up::before{content:""}
+  .mcard.up span{display:block}
+  .mcard span{display:none}
+  .mcard.match{background:linear-gradient(160deg,#B7F5C9,#7BDE9E);box-shadow:inset 0 0 0 3px #fff}
+  .mcard:active{transform:scale(.96)}
+  .winbox{position:fixed;inset:0;z-index:30;display:grid;place-items:center;padding:22px;text-align:center;
+    background:rgba(7,28,46,.86);backdrop-filter:blur(6px)}
+  .wincard{display:grid;gap:12px;justify-items:center;color:#fff}
+  .wincard h3{margin:0;font-size:1.5rem}
+
+  /* ---------- pemutar ---------- */
+  #view-player{max-width:none;padding:12px clamp(10px,3vw,22px) 28px;min-height:100vh;
+    background:radial-gradient(1200px 600px at 50% -10%,#12466F 0%,#0B2A44 55%,#071C2E 100%);color:#EAF6FF}
+  .pbar{display:flex;align-items:center;gap:10px;max-width:1000px;margin:0 auto 10px}
+  .pbar .title{flex:1;text-align:center;font-weight:800;font-size:clamp(.95rem,2.2vw,1.2rem);
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.95}
+  .biground{width:58px;height:58px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:22px;
+    display:grid;place-items:center;flex:0 0 auto}
+  .biground:active{transform:scale(.94)}
+  .stagewrap{position:relative;max-width:1000px;margin:0 auto}
+  .stage{aspect-ratio:16/9;background:#04121E;border-radius:26px;overflow:hidden;box-shadow:0 26px 60px rgba(0,0,0,.45);
+    display:grid;place-items:center;position:relative}
+  .stage iframe,.stage video{width:100%;height:100%;border:0;display:block;background:#000}
+  .tapbadge{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;opacity:0;
+    transition:opacity .18s ease;font-size:clamp(56px,10vw,84px);text-shadow:0 10px 26px rgba(0,0,0,.5)}
+  .tapbadge.show{opacity:1}
+  .stage-empty{display:grid;gap:10px;justify-items:center;color:#CFE6F7;padding:22px;text-align:center}
+  .stage-empty p{margin:0;font-size:.95rem;line-height:1.5;max-width:430px}
+  .pnav{display:flex;justify-content:center;align-items:center;gap:clamp(14px,4vw,34px);max-width:1000px;margin:18px auto 0}
+  .pnav-btn{width:clamp(76px,13vw,96px);height:clamp(76px,13vw,96px);border-radius:32px;font-size:clamp(28px,5vw,34px);
+    background:rgba(255,255,255,.13);color:#fff;display:grid;place-items:center}
+  .pnav-btn:active{transform:scale(.94)}
+  .pnav-btn.primary{background:linear-gradient(160deg,#4FC3F7,#1F9BF0);box-shadow:0 12px 26px rgba(31,155,240,.4)}
+  .pnav-btn:disabled{opacity:.25}
+  .pnote{max-width:1000px;margin:14px auto 0;text-align:center;color:#9FC2DC;font-size:.84rem;font-weight:700}
+
+  .endoverlay{position:absolute;inset:0;border-radius:26px;background:rgba(7,28,46,.86);backdrop-filter:blur(6px);
+    display:grid;place-items:center;text-align:center;padding:18px;z-index:5}
+  .endcard{display:grid;gap:12px;justify-items:center;max-width:470px}
+  .endcard h3{margin:0;font-size:clamp(1.2rem,3vw,1.5rem);color:#fff}
+  .endbtns{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .endbtn{padding:14px 18px;border-radius:20px;font-weight:800;font-size:clamp(.9rem,2vw,1rem);color:var(--navy);background:#fff}
+  .endbtn.replay{background:#FFD93D}
+  .endbtn.next{background:#8EE6B0}
+
+  /* ---------- PIN & pengaturan ---------- */
+  .card-white{background:#fff;border-radius:30px;box-shadow:var(--sh);padding:24px}
+  .pinbox{max-width:420px;margin:6vh auto 0;text-align:center}
+  .pinbox h2{margin:8px 0 2px;font-size:1.3rem}
+  .pinbox .sub{color:var(--muted);font-size:.9rem;margin:0 0 14px;font-weight:700}
+  .dots{display:flex;gap:12px;justify-content:center;margin:8px 0 16px}
+  .dots i{width:18px;height:18px;border-radius:50%;background:#E4EEF6;transition:.15s}
+  .dots i.on{background:var(--blue);transform:scale(1.12)}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .key{border-radius:18px;background:#F1F7FC;font-size:1.45rem;font-weight:800;padding:15px 0}
+  .key:active{background:#E1EDF7}
+  .shake{animation:shake .36s}
+  @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-9px)}75%{transform:translateX(9px)}}
+  .pinhint{color:var(--muted);font-size:.8rem;margin-top:10px;font-weight:700}
+  .panel{background:#fff;border-radius:26px;box-shadow:var(--sh);padding:20px;margin-bottom:14px}
+  .panel h3{margin:0 0 12px;font-size:1rem}
+  .toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:6px 0}
+  .switch{width:58px;height:32px;border-radius:999px;background:#DCE8F2;position:relative;transition:.18s;flex:0 0 auto}
+  .switch::after{content:"";position:absolute;top:4px;left:4px;width:24px;height:24px;border-radius:50%;background:#fff;
+    box-shadow:0 2px 5px rgba(0,0,0,.2);transition:.18s}
+  .switch.on{background:var(--blue)}
+  .switch.on::after{left:30px}
+
+  #breakOverlay{position:fixed;inset:0;z-index:40;display:grid;place-items:center;padding:22px;text-align:center;
+    background:linear-gradient(180deg,#0B2A44,#12466F 60%,#1B5A86)}
+  .breakcard{max-width:480px;display:grid;gap:8px;justify-items:center;color:#EAF6FF}
+  .breakcard h2{margin:6px 0 0;font-size:1.6rem}
+  .breakcard p{margin:0;color:#B9D7EC;line-height:1.5;font-weight:700}
+  .zzz{display:flex;gap:6px;font-size:20px;color:#bfe0f5;margin-top:2px}
+  .zzz b{animation:zfloat 2.4s ease-in-out infinite}
+  .zzz b:nth-child(2){animation-delay:.4s;font-size:26px}
+  .zzz b:nth-child(3){animation-delay:.8s;font-size:32px}
+  @keyframes zfloat{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-8px);opacity:1}}
+  .breakbtn{margin-top:12px;background:#fff;color:var(--navy);padding:13px 20px;border-radius:18px;font-weight:800}
+
+  #toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,16px);background:var(--navy);color:#fff;
+    padding:12px 18px;border-radius:999px;box-shadow:var(--sh);opacity:0;pointer-events:none;transition:.25s;
+    font-weight:800;z-index:60;max-width:92vw;text-align:center;font-size:.92rem}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+
+  @media (prefers-reduced-motion: reduce){
+    .mascot,.cloud,.zzz b,.balloon{animation:none}
+    .poster,.menuTile,.gameTile,.tapbadge,.switch,.mcard{transition:none}
+  }
+</style>
+<link rel="manifest" href="manifest.webmanifest"/>
+<meta name="theme-color" content="#1F9BF0"/>
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="BIRU STUDIO"/>
+<meta name="description" content="BIRU STUDIO — video dan game untuk anak. Tanpa iklan. BY SASAM"/>
+<script src="app.js"></script>
+</head>
+<body>
+
+<div class="wall-deco" aria-hidden="true"><div class="sunny"></div><div class="cloud c1"></div><div class="cloud c2"></div></div>
+
+<!-- ================= UTAMA: hanya VIDEO & GAME ================= -->
+<section id="view-home" class="view kidish">
+  <header class="brandbar">
+    <div class="brand">
+      <span class="brandtap" id="secretDoor" title="">
+        <span class="mascot" data-mascot="hello"></span>
+      </span>
+      <h1>BIRU STUDIO</h1>
+    </div>
+    <div class="hdr-right">
+      <span id="timerPill" class="timerpill hidden">⏳ <b id="timerTxt">15 mnt</b></span>
+      <button id="btnLock" class="lockbtn" aria-label="Pengaturan orang tua">🔒</button>
+    </div>
+  </header>
+
+  <div class="menuGrid">
+    <button class="menuTile video" id="tileVideo" aria-label="Video">
+      <span class="icon">🎬</span>
+      <span class="name">VIDEO</span>
+      <span class="count" id="videoCount"></span>
+    </button>
+    <button class="menuTile game" id="tileGame" aria-label="Game">
+      <span class="icon">🎮</span>
+      <span class="name">GAME</span>
+      <span class="count">2 game</span>
+    </button>
+  </div>
+
+  <p class="license">BY SASAM</p>
+</section>
+
+<!-- ================= MENU VIDEO ================= -->
+<section id="view-videos" class="view kidish hidden">
+  <header class="subhead">
+    <button class="backbtn" id="btnVideosBack" aria-label="Kembali">⬅️</button>
+    <h2>VIDEO</h2>
+    <div class="right"><button class="donebtn hidden" id="btnAdminDone">✓ Selesai</button></div>
+  </header>
+
+  <div class="adminpanel hidden" id="adminPanel">
+    <h3>➕ Tambah video</h3>
+    <div class="field"><label for="fTitle">Judul</label>
+      <input id="fTitle" type="text" maxlength="50" placeholder="Nama video"/></div>
+    <div class="field"><label>Ikon</label><div class="emrow" id="emojiRow"></div></div>
+    <div class="field"><label>Sumber</label>
+      <div class="moderow">
+        <button type="button" class="mode on" id="modeFile">📁 File</button>
+        <button type="button" class="mode" id="modeYt">🔗 YouTube</button>
+      </div>
+      <div id="wrapFile">
+        <div class="filerow">
+          <label class="filebtn" for="fFile">Pilih file video</label>
+          <input id="fFile" type="file" accept="video/*" hidden/>
+          <span class="fname" id="fFileName">Belum ada file</span>
+        </div>
+      </div>
+      <div id="wrapLink" class="hidden">
+        <input id="fLink" type="url" placeholder="https://youtu.be/…"/>
+      </div>
+    </div>
+    <p class="err" id="fError"></p>
+    <button class="btn brand" id="btnAdd" style="width:100%">Tambah</button>
+  </div>
+
+  <div class="posters" id="videoGrid"></div>
+
+  <div class="emptybox hidden" id="videoEmpty">
+    <span data-mascot="sleepy" data-size="70"></span>
+    <h3>Belum ada video</h3>
+    <p>Ketuk tombol + untuk menambah.</p>
+  </div>
+</section>
+
+<!-- ================= MENU GAME ================= -->
+<section id="view-games" class="view kidish hidden">
+  <header class="subhead">
+    <button class="backbtn" id="btnGamesBack" aria-label="Kembali">⬅️</button>
+    <h2>GAME</h2>
+  </header>
+  <div class="gameGrid">
+    <button class="gameTile g1" id="gameBalloon">
+      <span class="icon">🎈</span><span class="name">Ketuk Balon</span>
+    </button>
+    <button class="gameTile g2" id="gameMemory">
+      <span class="icon">🧩</span><span class="name">Cocokkan Kartu</span>
+    </button>
+  </div>
+</section>
+
+<!-- ================= GAME: BALON ================= -->
+<section id="view-balloon" class="kidish hidden">
+  <div class="gbar">
+    <button class="backbtn" id="btnBalloonExit" aria-label="Kembali">⬅️</button>
+    <div class="score" id="balloonScore">⭐ 0</div>
+  </div>
+  <div class="gfield" id="balloonField"></div>
+</section>
+
+<!-- ================= GAME: KARTU ================= -->
+<section id="view-memory" class="kidish hidden">
+  <div class="gbar">
+    <button class="backbtn" id="btnMemoryExit" aria-label="Kembali">⬅️</button>
+    <div class="score" id="memoryScore">🧩 0</div>
+  </div>
+  <div class="mgrid" id="memoryGrid"></div>
+  <div class="winbox hidden" id="memoryWin">
+    <div class="wincard">
+      <span data-mascot="yay"></span>
+      <h3>Hebat!</h3>
+      <button class="donebtn" id="btnMemoryAgain">🔁 Main lagi</button>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PEMUTAR ================= -->
+<section id="view-player" class="view kidish hidden">
+  <header class="pbar">
+    <button id="btnPlayerBack" class="biground" aria-label="Kembali">⬅️</button>
+    <div class="title" id="playerTitle">Judul</div>
+    <span style="width:58px;flex:0 0 auto"></span>
+  </header>
+  <div class="stagewrap">
+    <div class="stage" id="stage"></div>
+    <div class="endoverlay hidden" id="endOverlay">
+      <div class="endcard">
+        <span data-mascot="yay"></span>
+        <h3>Selesai! Mau apa lagi?</h3>
+        <div class="endbtns">
+          <button class="endbtn replay" id="btnReplay">🔁 Ulang</button>
+          <button class="endbtn next" id="btnNextVideo">⏭ Lanjut</button>
+          <button class="endbtn home" id="btnToVideos">🏠 Daftar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="pnav">
+    <button id="btnPrev" class="pnav-btn" aria-label="Sebelumnya">⏮</button>
+    <button id="btnPlay" class="pnav-btn primary" aria-label="Putar atau jeda">▶️</button>
+    <button id="btnNext" class="pnav-btn" aria-label="Berikutnya">⏭</button>
+  </div>
+  <p class="pnote" id="playerNote"></p>
+</section>
+
+<!-- ================= PIN ================= -->
+<section id="view-pin" class="view hidden">
+  <div class="pinbox card-white" id="pinCard">
+    <span data-mascot="think"></span>
+    <h2>Khusus Orang Tua</h2>
+    <div class="dots" id="pinDots"><i></i><i></i><i></i><i></i></div>
+    <div class="keypad" id="keypad">
+      <button class="key" data-key="1">1</button><button class="key" data-key="2">2</button><button class="key" data-key="3">3</button>
+      <button class="key" data-key="4">4</button><button class="key" data-key="5">5</button><button class="key" data-key="6">6</button>
+      <button class="key" data-key="7">7</button><button class="key" data-key="8">8</button><button class="key" data-key="9">9</button>
+      <button class="key" data-key="del">⌫</button><button class="key" data-key="0">0</button><button class="key" data-key="ok">✓</button>
+    </div>
+    <p class="pinhint">PIN demo: <b>1234</b></p>
+    <button class="btn" id="btnPinCancel" style="margin-top:8px">Batal</button>
+  </div>
+</section>
+
+<!-- ================= PENGATURAN ================= -->
+<section id="view-settings" class="view hidden">
+  <header class="subhead">
+    <button class="backbtn" id="btnSettingsBack" aria-label="Kembali">⬅️</button>
+    <h2>PENGATURAN</h2>
+  </header>
+  <div class="panel">
+    <h3>⏳ Batas menonton</h3>
+    <div class="filerow">
+      <input id="timerInput" type="number" min="0" max="180" step="5" placeholder="0" style="width:104px;flex:0 0 auto"/>
+      <span class="muted" style="font-size:.86rem;font-weight:700">menit (0 = tanpa batas)</span>
+      <button class="btn brand" id="btnTimerSave">Simpan</button>
+    </div>
+    <div class="toggle" style="margin-top:14px">
+      <b style="font-size:.94rem">Suara efek</b>
+      <button class="switch" id="soundSwitch" aria-label="Suara efek"></button>
+    </div>
+    <p class="muted" id="capacityMsg" style="font-size:.8rem;margin:12px 0 0;font-weight:700"></p>
+  </div>
+  <div class="panel">
+    <h3>🔒 Tombol admin</h3>
+    <div class="toggle">
+      <div>
+        <b style="font-size:.94rem">Sembunyikan tombol 🔒 di layar utama</b>
+        <div class="muted" style="font-size:.8rem;font-weight:700;line-height:1.4;margin-top:2px">
+          Bila disembunyikan, buka pengaturan dengan mengetuk logo Biru <b>3×</b> lalu masukkan PIN.
+        </div>
+      </div>
+      <button class="switch" id="adminHideSwitch" aria-label="Sembunyikan tombol admin"></button>
+    </div>
+  </div>
+  <div class="panel">
+    <h3>💾 Backup</h3>
+    <div class="filerow">
+      <button class="btn brand" id="btnExport">⬇️ Unduh</button>
+      <label class="filebtn" for="fImport">⬆️ Pulihkan</label>
+      <input id="fImport" type="file" accept="application/json,.json" hidden/>
+    </div>
+    <p class="muted" id="backupMsg" style="font-size:.8rem;margin:10px 0 0;font-weight:700"></p>
+  </div>
+</section>
+
+<!-- ================= ISTIRAHAT ================= -->
+<div id="breakOverlay" class="hidden">
+  <div class="breakcard">
+    <span data-mascot="sleepy"></span>
+    <div class="zzz"><b>z</b><b>z</b><b>z</b></div>
+    <h2>Istirahat dulu, ya!</h2>
+    <p>Mata dan badan perlu istirahat. Minum air, main sebentar, nanti boleh lagi. 💙</p>
+    <button class="breakbtn" id="btnBreakUnlock">Buka (orang tua)</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* =========================================================
+   BIRU STUDIO — isi: VIDEO & GAME.
+   Lisensi: BY SASAM
+   ========================================================= */
+const $=(s)=>document.querySelector(s);
+const $$=(s)=>[...document.querySelectorAll(s)];
+const KEY='biru.v2';
+const PIN='1234';
+const PAL=[
+  'linear-gradient(160deg,#BFE9FF,#8FD3FF)',
+  'linear-gradient(160deg,#FFE6A6,#FFC96B)',
+  'linear-gradient(160deg,#FFD3DE,#FFAFC3)',
+  'linear-gradient(160deg,#D4F5CE,#A6E5A0)',
+  'linear-gradient(160deg,#E4DBFF,#C6B6FF)',
+  'linear-gradient(160deg,#BFF0E4,#8ADCC8)'
+];
+const EMOJIS=['🎬','🐳','🐣','🦖','🚀','🌈','🎵','📚','🌙','🧸','🚂','🍎','🎨','⚽','🐊','🦋','⭐','🧩','🍓','🎪'];
+const BALLOON_COLORS=[
+  'radial-gradient(circle at 32% 28%,#FF9EC4,#FF5C97)',
+  'radial-gradient(circle at 32% 28%,#9EE7FF,#37B8F0)',
+  'radial-gradient(circle at 32% 28%,#FFE79A,#FFC229)',
+  'radial-gradient(circle at 32% 28%,#B9F3C9,#4FD07A)',
+  'radial-gradient(circle at 32% 28%,#D9C8FF,#9B7BF0)'
+];
+const MEM_EMOJI=['🐳','🐣','🦖','🌈'];
+
+/* ---------- maskot ---------- */
+function mascot(mood,size){
+  const s=size||'56';
+  const spout=(mood==='sleepy'||mood==='think')?'':
+    '<g fill="#7DD3FC"><circle cx="72" cy="12" r="4"/><circle cx="62" cy="7" r="3"/><circle cx="80" cy="6" r="2.6"/></g>';
+  let eye,mouth,extra='';
+  if(mood==='sleepy'){ eye='<path d="M76 52q5 4 10 0" stroke="#0F2A44" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    mouth='<path d="M70 66q6 4 12 1" stroke="#0F2A44" stroke-width="3" fill="none" stroke-linecap="round"/>'; }
+  else if(mood==='yay'||mood==='hello'){ eye='<path d="M76 50q5-5 10 0" stroke="#0F2A44" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+    mouth='<path d="M68 64q8 9 17 0" stroke="#0F2A44" stroke-width="3.4" fill="none" stroke-linecap="round"/>';
+    if(mood==='yay') extra='<g fill="#FFD93D"><path d="M22 22l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><circle cx="104" cy="26" r="3.4"/><circle cx="34" cy="46" r="2.6"/></g>'; }
+  else { eye='<circle cx="81" cy="51" r="6.4" fill="#0F2A44"/><circle cx="83.4" cy="48.6" r="2" fill="#fff"/>';
+    mouth='<path d="M71 64q6 6 13 2" stroke="#0F2A44" stroke-width="3" fill="none" stroke-linecap="round"/>'; }
+  return '<svg viewBox="0 0 120 104" width="'+s+'" height="'+Math.round(Number(s)*0.87)+'" aria-hidden="true">'+
+    spout+
+    '<path d="M20 66C8 57 8 44 19 40c4 12 10 16 16 18z" fill="#0EA5E9"/>'+
+    '<ellipse cx="62" cy="62" rx="41" ry="33" fill="#38BDF8"/>'+
+    '<ellipse cx="64" cy="74" rx="33" ry="19" fill="#BAE6FD"/>'+eye+
+    '<ellipse cx="94" cy="62" rx="6" ry="4" fill="#FF8FA3" opacity=".85"/>'+mouth+
+    '<path d="M48 76q-5 13 6 13 8-2 5-12z" fill="#0EA5E9"/>'+extra+'</svg>';
+}
+function paintMascots(){
+  $$('[data-mascot]').forEach(el=>{ el.innerHTML=mascot(el.dataset.mascot, el.dataset.size||'56'); });
+}
+
+/* ---------- suara ---------- */
+let actx=null;
+function sfx(freq,dur,type,gain,slide){
+  if(!state || state.sound===false) return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain();
+    o.type=type||'sine'; o.frequency.setValueAtTime(freq,t);
+    if(slide) o.frequency.exponentialRampToValueAtTime(Math.max(60,freq+slide),t+dur);
+    g.gain.setValueAtTime(gain||.06,t);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g).connect(actx.destination); o.start(t); o.stop(t+dur+.02);
+  }catch(e){}
+}
+const sfxTap=()=>sfx(520,.09,'sine',.05,140);
+const sfxOpen=()=>{sfx(420,.10,'triangle',.06,120); setTimeout(()=>sfx(640,.14,'triangle',.05,160),90);};
+const sfxDing=()=>{sfx(660,.16,'sine',.06,220); setTimeout(()=>sfx(880,.22,'sine',.05,140),150);};
+const sfxPop=()=>sfx(760,.08,'square',.035,-300);
+
+/* ---------- penyimpanan ---------- */
+const store=(()=>{try{localStorage.setItem('__t','1');localStorage.removeItem('__t');return localStorage}catch(e){return null}})();
+let _db=null;
+function openDB(){
+  if(_db) return Promise.resolve(_db);
+  return new Promise((res,rej)=>{
+    let r; try{ r=indexedDB.open('biru-media',1); }catch(e){ rej(e); return; }
+    r.onupgradeneeded=()=>{ const d=r.result; if(!d.objectStoreNames.contains('media')) d.createObjectStore('media',{keyPath:'id'}); };
+    r.onsuccess=()=>{ _db=r.result; res(_db); };
+    r.onerror=()=>rej(r.error);
+  });
+}
+function dbTx(mode,fn){
+  return openDB().then(db=>new Promise((res,rej)=>{
+    const tx=db.transaction('media',mode), req=fn(tx.objectStore('media'));
+    tx.oncomplete=()=>res(req?req.result:undefined);
+    tx.onerror=()=>rej(tx.error); tx.onabort=()=>rej(tx.error);
+  }));
+}
+const idbPut=(r)=>dbTx('readwrite',s=>s.put(r));
+const idbGet=(id)=>dbTx('readonly',s=>s.get(id)).then(r=>r&&r.blob?r.blob:null);
+const idbDel=(id)=>dbTx('readwrite',s=>s.delete(id));
+const idbAll=()=>dbTx('readonly',s=>s.getAll());
+const idbClear=()=>dbTx('readwrite',s=>s.clear());
+
+function loadState(){
+  if(store){
+    try{
+      const raw=store.getItem(KEY);
+      if(raw){
+        const s=JSON.parse(raw);
+        if(s && Array.isArray(s.videos)) return {videos:s.videos, timerMin:Number(s.timerMin)||0,
+          sound:s.sound!==false, adminHidden:s.adminHidden===true};
+      }
+    }catch(e){}
+  }
+  return {videos:[], timerMin:0, sound:true, adminHidden:false};
+}
+let state=loadState();
+function saveState(){
+  if(!store) return;
+  try{
+    store.setItem(KEY, JSON.stringify({
+      timerMin:state.timerMin, sound:state.sound!==false, adminHidden:state.adminHidden===true,
+      videos:state.videos.map(v=> v.type==='file' ? {...v,src:''} : v)
+    }));
+  }catch(e){}
+}
+
+/* ---------- util ---------- */
+function esc(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+function tilt(id){ let h=0; for(const c of String(id)) h=(h*31+c.charCodeAt(0))%1000; return ((h%9)-4)*0.7; }
+function toast(msg){
+  const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ---------- navigasi ---------- */
+const views={home:'#view-home',videos:'#view-videos',games:'#view-games',balloon:'#view-balloon',
+  memory:'#view-memory',player:'#view-player',pin:'#view-pin',settings:'#view-settings'};
+function show(name){
+  if(name!=='balloon') stopBalloons();
+  /* layar gelap (pemutar & game) tanpa hiasan langit */
+  const dark = (name==='player'||name==='balloon'||name==='memory');
+  document.body.classList.toggle('darkview',dark);
+  Object.entries(views).forEach(([k,sel])=>$(sel).classList.toggle('hidden',k!==name));
+  window.scrollTo(0,0);
+}
+
+/* ---------- layar utama ---------- */
+function renderHome(){
+  $('#videoCount').textContent = state.videos.length ? (state.videos.length+' video') : 'kosong';
+  $('#btnLock').classList.toggle('hidden', state.adminHidden===true);
+}
+
+/* ---------- menu video ---------- */
+let adminMode=false;
+function openVideos(){ adminMode=false; renderVideos(); show('videos'); }
+function renderVideos(){
+  const grid=$('#videoGrid');
+  $('#adminPanel').classList.toggle('hidden',!adminMode);
+  $('#btnAdminDone').classList.toggle('hidden',!adminMode);
+  $('#videoEmpty').classList.toggle('hidden',state.videos.length>0);
+  grid.innerHTML=state.videos.map(v=>`
+    <button class="poster ${adminMode?'adding':''}" style="--tilt:${tilt(v.id)}deg" data-id="${v.id}" aria-label="${esc(v.title)}">
+      <span class="tape"></span>
+      <span class="pic" style="background:${PAL[v.g%PAL.length]}">
+        <span class="em">${v.emoji}</span>
+        <span class="play">▶</span>
+      </span>
+      <span class="cap">${esc(v.title)}</span>
+      <span class="del" data-del="${v.id}" role="button" aria-label="Hapus">🗑️</span>
+    </button>`).join('') + `
+    <button class="poster add" id="addTile" aria-label="Tambah video">
+      <span class="pic">＋</span>
+      <span class="cap">Tambah video</span>
+    </button>`;
+  renderHome();
+}
+function askPin(action){ pendingAction=action; pinBuf=''; renderPin(); show('pin'); }
+
+/* ---------- pemutar ---------- */
+let playId=null, isPlaying=false;
+function order(){ return state.videos.map(v=>v.id); }
+function openPlayer(id){ playId=id; sfxOpen(); renderPlayer(); show('player'); }
+function currentVideo(){ return state.videos.find(v=>v.id===playId); }
+function renderPlayer(){
+  const v=currentVideo();
+  if(!v){ openVideos(); return; }
+  $('#playerTitle').textContent=v.emoji+'  '+v.title;
+  $('#endOverlay').classList.add('hidden');
+  const stage=$('#stage'), note=$('#playerNote');
+  isPlaying=false; $('#btnPlay').textContent='▶️';
+  $('#btnPlay').classList.toggle('hidden', v.type!=='file');
+  if(v.type==='yt'){
+    stage.innerHTML=`<iframe title="${esc(v.title)}" src="https://www.youtube-nocookie.com/embed/${encodeURIComponent(v.src)}?rel=0&modestbranding=1&playsinline=1&autoplay=1" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe>`;
+    note.textContent='YouTube — tanpa komentar & tanpa saran video.';
+  } else if(v.type==='file'){
+    stage.innerHTML=`<video playsinline disablepictureinpicture controlslist="nodownload noplaybackrate nofullscreen noremoteplayback"></video><div class="tapbadge" id="tapBadge">▶️</div>`;
+    const vid=stage.querySelector('video');
+    note.textContent='Memuat…';
+    idbGet(v.id).then(blob=>{
+      if(!blob){ note.textContent='Video tidak ditemukan di perangkat.'; return; }
+      vid.src=URL.createObjectURL(blob); vid.play().catch(()=>{});
+      note.textContent='Dari perangkat — tanpa internet.';
+    }).catch(()=>{ note.textContent='Gagal memuat video.'; });
+    vid.addEventListener('play',()=>{ isPlaying=true; $('#btnPlay').textContent='⏸'; });
+    vid.addEventListener('pause',()=>{ isPlaying=false; $('#btnPlay').textContent='▶️'; });
+    vid.addEventListener('ended',(e)=>{ e.stopPropagation(); isPlaying=false; $('#btnPlay').textContent='▶️'; showEnd(); });
+    let lastTap=0;
+    stage.addEventListener('click',(e)=>{
+      if(e.target===vid||e.target.closest('.tapbadge')){
+        const now=Date.now();
+        if(now-lastTap<350){
+          lastTap=0;
+          if(document.fullscreenElement){ document.exitFullscreen().catch(()=>{}); }
+          else if(stage.requestFullscreen){ stage.requestFullscreen().catch(()=>{}); }
+          return;
+        }
+        lastTap=now;
+        setTimeout(()=>{
+          if(lastTap!==now) return;
+          lastTap=0;
+          if(vid.paused){ vid.play().catch(()=>{}); } else { vid.pause(); }
+          flashBadge(vid.paused?'▶️':'⏸');
+        },360);
+      }
+    });
+  } else {
+    stage.innerHTML=`<div class="stage-empty">${mascot('think','72')}<p><b>Video belum diisi.</b></p></div>`;
+    note.textContent=''; $('#btnPlay').classList.add('hidden');
+  }
+  updateNav();
+}
+function flashBadge(txt){
+  const b=$('#tapBadge'); if(!b) return;
+  b.textContent=txt; b.classList.add('show');
+  clearTimeout(flashBadge._t); flashBadge._t=setTimeout(()=>b.classList.remove('show'),600);
+}
+function showEnd(){
+  sfxDing();
+  const o=order(), i=o.indexOf(playId), hasNext=i>=0&&i<o.length-1;
+  $('#btnNextVideo').disabled=!hasNext;
+  $('#btnNextVideo').style.opacity=hasNext?'1':'.4';
+  $('#endOverlay').classList.remove('hidden');
+  const vid=document.querySelector('#stage video'); if(vid){ try{ vid.pause(); }catch(e){} }
+}
+function updateNav(){
+  const o=order(), i=o.indexOf(playId);
+  $('#btnPrev').disabled=i<=0;
+  $('#btnNext').disabled=i<0||i>=o.length-1;
+}
+function step(dir){
+  const o=order(), i=o.indexOf(playId), j=i+dir;
+  if(j>=0&&j<o.length){ playId=o[j]; sfxTap(); renderPlayer(); }
+}
+function stopStage(){
+  const vid=document.querySelector('#stage video'); if(vid){ try{ vid.pause(); }catch(e){} }
+  $('#stage').innerHTML=''; playId=null;
+}
+
+/* ---------- GAME: balon ---------- */
+let balloonInt=null, balloonScore=0;
+function startBalloons(){
+  const field=$('#balloonField'); field.innerHTML='';
+  balloonScore=0; $('#balloonScore').textContent='⭐ 0';
+  show('balloon');
+  clearInterval(balloonInt);
+  balloonInt=setInterval(spawnBalloon,750);
+  spawnBalloon(); spawnBalloon();
+}
+function spawnBalloon(){
+  const field=$('#balloonField');
+  if(!field||field.children.length>9) return;
+  const b=document.createElement('button');
+  b.className='balloon'; b.type='button';
+  b.style.left=(4+Math.random()*86)+'%';
+  b.style.setProperty('--dur',(4.5+Math.random()*2.5).toFixed(2)+'s');
+  b.style.background=BALLOON_COLORS[Math.floor(Math.random()*BALLOON_COLORS.length)];
+  b.addEventListener('animationend',()=>b.remove());
+  b.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    if(b.classList.contains('pop')) return;
+    b.classList.add('pop'); sfxPop();
+    balloonScore++; $('#balloonScore').textContent='⭐ '+balloonScore;
+    setTimeout(()=>b.remove(),240);
+  });
+  field.appendChild(b);
+}
+function stopBalloons(){ clearInterval(balloonInt); balloonInt=null; }
+
+/* ---------- GAME: kartu ---------- */
+let memFirst=null, memLock=false, memMatched=0;
+function startMemory(){
+  const grid=$('#memoryGrid');
+  memFirst=null; memLock=false; memMatched=0;
+  $('#memoryWin').classList.add('hidden');
+  $('#memoryScore').textContent='🧩 0';
+  const deck=[...MEM_EMOJI,...MEM_EMOJI].sort(()=>Math.random()-0.5);
+  grid.innerHTML=deck.map(e=>`<button class="mcard" data-e="${e}" aria-label="Kartu"><span>${e}</span></button>`).join('');
+  show('memory');
+}
+$('#memoryGrid').addEventListener('click',(e)=>{
+  const c=e.target.closest('.mcard'); if(!c||memLock) return;
+  if(c.classList.contains('up')||c.classList.contains('match')) return;
+  c.classList.add('up'); sfxTap();
+  if(!memFirst){ memFirst=c; return; }
+  if(memFirst===c) return;
+  if(memFirst.dataset.e===c.dataset.e){
+    memFirst.classList.add('match'); c.classList.add('match');
+    memFirst=null; memMatched++;
+    $('#memoryScore').textContent='🧩 '+memMatched;
+    sfxDing();
+    if(memMatched===MEM_EMOJI.length){ setTimeout(()=>$('#memoryWin').classList.remove('hidden'),350); }
+  } else {
+    memLock=true;
+    const a=memFirst, b=c;
+    memFirst=null;
+    setTimeout(()=>{ a.classList.remove('up'); b.classList.remove('up'); memLock=false; },780);
+  }
+});
+
+/* ---------- timer ---------- */
+let timerEnd=0, breakActive=false;
+function ensureTimer(){ if(state.timerMin>0&&!timerEnd&&!breakActive) timerEnd=Date.now()+state.timerMin*60000; }
+function renderTimerPill(){
+  const pill=$('#timerPill');
+  if(state.timerMin>0){
+    pill.classList.remove('hidden');
+    const left=timerEnd?Math.max(0,timerEnd-Date.now()):state.timerMin*60000;
+    $('#timerTxt').textContent = left<60000 ? Math.max(0,Math.ceil(left/1000))+' dtk' : Math.ceil(left/60000)+' mnt';
+  } else pill.classList.add('hidden');
+}
+function showBreak(){
+  breakActive=true; timerEnd=0;
+  stopStage(); stopBalloons();
+  $('#endOverlay').classList.add('hidden');
+  $('#breakOverlay').classList.remove('hidden');
+}
+setInterval(()=>{
+  if(state.timerMin>0){
+    ensureTimer(); renderTimerPill();
+    if(timerEnd&&Date.now()>=timerEnd&&!breakActive) showBreak();
+  }
+},5000);
+
+/* ---------- PIN ---------- */
+let pinBuf='', pendingAction=null;
+function renderPin(){ $$('#pinDots i').forEach((d,i)=>d.classList.toggle('on',i<pinBuf.length)); }
+function pressKey(k){
+  if(k==='del'){ pinBuf=pinBuf.slice(0,-1); renderPin(); return; }
+  if(k==='ok'){ checkPin(); return; }
+  if(pinBuf.length<4){ pinBuf+=k; renderPin(); if(pinBuf.length===4) setTimeout(checkPin,140); }
+}
+function checkPin(){
+  const c=$('#pinCard');
+  if(pinBuf===PIN){
+    pinBuf=''; renderPin(); breakActive=false;
+    $('#breakOverlay').classList.add('hidden');
+    sfxOpen();
+    const act=pendingAction; pendingAction=null;
+    if(act) act();
+  } else {
+    pinBuf=''; renderPin();
+    c.classList.remove('shake'); void c.offsetWidth; c.classList.add('shake');
+  }
+}
+
+/* ---------- pengaturan ---------- */
+function openSettings(){
+  $('#timerInput').value=state.timerMin?String(state.timerMin):'';
+  $('#soundSwitch').classList.toggle('on',state.sound!==false);
+  $('#adminHideSwitch').classList.toggle('on',state.adminHidden===true);
+  refreshCap();
+  show('settings');
+}
+async function refreshCap(){
+  const el=$('#capacityMsg'); if(!el) return;
+  try{
+    if(navigator.storage&&navigator.storage.estimate){
+      const e=await navigator.storage.estimate();
+      const used=(e.usage||0)/1048576, q=(e.quota||0)/1048576;
+      el.textContent='Penyimpanan: '+used.toFixed(0)+' MB dari ± '+(q>=1024?(q/1024).toFixed(1)+' GB':q.toFixed(0)+' MB');
+    } else el.textContent='';
+  }catch(e){ el.textContent=''; }
+}
+
+/* ---------- tambah video ---------- */
+let pickedEmoji='🎬', srcMode='file', chosenFile=null;
+function renderEmojis(){
+  $('#emojiRow').innerHTML=EMOJIS.map(e=>`<button type="button" class="emopt ${e===pickedEmoji?'sel':''}" data-emoji="${e}">${e}</button>`).join('');
+}
+function renderMode(){
+  $('#wrapFile').classList.toggle('hidden',srcMode!=='file');
+  $('#wrapLink').classList.toggle('hidden',srcMode!=='yt');
+  $('#modeFile').classList.toggle('on',srcMode==='file');
+  $('#modeYt').classList.toggle('on',srcMode==='yt');
+}
+function ytId(u){
+  if(!u) return null;
+  try{
+    const url=new URL(u);
+    if(url.hostname.includes('youtu.be')) return url.pathname.slice(1).split('/')[0]||null;
+    if(url.searchParams.get('v')) return url.searchParams.get('v');
+    const m=url.pathname.match(/\/(embed|shorts|live)\/([\w-]{6,})/);
+    if(m) return m[2];
+    return null;
+  }catch(e){ return null; }
+}
+function pushVideo(v){
+  const id=v.id||('v'+Date.now()+Math.random().toString(36).slice(2,5));
+  state.videos.unshift({id,g:Math.floor(Math.random()*PAL.length),...v});
+  saveState();
+  $('#fTitle').value=''; $('#fLink').value='';
+  chosenFile=null; $('#fFileName').textContent='Belum ada file';
+  const fi=$('#fFile'); if(fi) fi.value='';
+  pickedEmoji='🎬'; renderEmojis();
+  renderVideos();
+  toast('Video ditambahkan');
+  sfxOpen();
+}
+
+/* ---------- backup ---------- */
+function blobToB64(blob){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onload=()=>res(String(fr.result).split(',')[1]||'');
+    fr.onerror=()=>rej(fr.error);
+    fr.readAsDataURL(blob);
+  });
+}
+function b64ToBlob(b64,type){
+  const bin=atob(b64), arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return new Blob([arr],{type:type||'video/mp4'});
+}
+async function exportBackup(){
+  toast('Menyiapkan…');
+  const media=[];
+  try{
+    const recs=await idbAll();
+    for(const r of recs){ if(r&&r.blob) media.push({id:r.id,type:r.blob.type||'video/mp4',data:await blobToB64(r.blob)}); }
+  }catch(e){}
+  const data={app:'biru-studio',v:3,state:{timerMin:state.timerMin,sound:state.sound,
+    videos:state.videos.map(v=> v.type==='file'?{...v,src:''}:v)},media};
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  const d=new Date(), pad=n=>String(n).padStart(2,'0');
+  a.download='biru-studio-'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  toast('Backup diunduh');
+}
+async function importBackup(file){
+  const msg=$('#backupMsg'); if(!file) return;
+  let data; try{ data=JSON.parse(await file.text()); }catch(e){ msg.textContent='File tidak valid.'; return; }
+  if(!data||data.app!=='biru-studio'||!data.state||!Array.isArray(data.state.videos)){ msg.textContent='Bukan backup BIRU STUDIO.'; return; }
+  if(!confirm('Ganti semua video dengan isi backup?')) return;
+  try{ await idbClear(); }catch(e){}
+  for(const m of (data.media||[])){ try{ await idbPut({id:m.id,blob:b64ToBlob(m.data,m.type)}); }catch(e){} }
+  state={videos:data.state.videos||[],timerMin:Number(data.state.timerMin)||0,
+    sound:data.state.sound!==false, adminHidden:data.state.adminHidden===true};
+  saveState(); renderVideos(); msg.textContent='Dipulihkan ✅'; toast('Dipulihkan');
+}
+
+/* ---------- event ---------- */
+$('#tileVideo').addEventListener('click',()=>{ sfxTap(); openVideos(); });
+$('#tileGame').addEventListener('click',()=>{ sfxTap(); show('games'); });
+$('#btnVideosBack').addEventListener('click',()=>{ sfxTap(); adminMode=false; stopStage(); renderHome(); show('home'); });
+$('#btnGamesBack').addEventListener('click',()=>{ sfxTap(); show('home'); });
+$('#btnLock').addEventListener('click',()=>{ sfxTap(); askPin(openSettings); });
+/* pintu rahasia: ketuk logo Biru 3x -> PIN (dipakai saat tombol admin disembunyikan) */
+let logoTaps=[];
+$('#secretDoor').addEventListener('click',()=>{
+  const now=Date.now();
+  logoTaps=logoTaps.filter(t=>now-t<1600);
+  logoTaps.push(now);
+  if(logoTaps.length>=3){ logoTaps=[]; sfxOpen(); askPin(openSettings); }
+});
+$('#btnSettingsBack').addEventListener('click',()=>{ sfxTap(); renderHome(); show('home'); });
+
+$('#videoGrid').addEventListener('click',(e)=>{
+  const del=e.target.closest('[data-del]');
+  if(del){
+    e.stopPropagation();
+    const id=del.dataset.del, v=state.videos.find(x=>x.id===id);
+    if(v&&v.type==='file') idbDel(id).catch(()=>{});
+    state.videos=state.videos.filter(x=>x.id!==id);
+    saveState(); renderVideos(); toast('Video dihapus');
+    return;
+  }
+  const add=e.target.closest('#addTile');
+  if(add){
+    sfxTap();
+    if(adminMode){ $('#fTitle').focus(); return; }
+    askPin(()=>{ adminMode=true; renderVideos(); show('videos'); $('#fTitle').focus(); });
+    return;
+  }
+  const p=e.target.closest('.poster[data-id]');
+  if(p&&!adminMode){ sfxTap(); openPlayer(p.dataset.id); }
+});
+$('#btnAdminDone').addEventListener('click',()=>{ sfxTap(); adminMode=false; renderVideos(); });
+
+$('#emojiRow').addEventListener('click',(e)=>{
+  const b=e.target.closest('[data-emoji]'); if(!b) return;
+  pickedEmoji=b.dataset.emoji; renderEmojis(); sfxTap();
+});
+$('#modeFile').addEventListener('click',()=>{ srcMode='file'; renderMode(); });
+$('#modeYt').addEventListener('click',()=>{ srcMode='yt'; renderMode(); });
+$('#fFile').addEventListener('change',(e)=>{
+  chosenFile=e.target.files&&e.target.files[0]?e.target.files[0]:null;
+  if(!chosenFile){ $('#fFileName').textContent='Belum ada file'; return; }
+  const mb=chosenFile.size/1048576;
+  $('#fFileName').textContent=chosenFile.name+' ('+(mb>=1?mb.toFixed(1)+' MB':Math.max(1,Math.round(chosenFile.size/1024))+' KB')+')';
+});
+$('#btnAdd').addEventListener('click',async()=>{
+  const err=$('#fError'); err.textContent='';
+  const title=$('#fTitle').value.trim()||'Video baru';
+  if(srcMode==='yt'){
+    const id=ytId($('#fLink').value.trim());
+    if(!id){ err.textContent='Link YouTube belum valid.'; return; }
+    pushVideo({title,emoji:pickedEmoji,type:'yt',src:id});
+    return;
+  }
+  if(!chosenFile){ err.textContent='Pilih file video dulu.'; return; }
+  const btn=$('#btnAdd'); btn.disabled=true; btn.textContent='Menyimpan…';
+  const vid='v'+Date.now()+Math.random().toString(36).slice(2,5);
+  try{
+    await idbPut({id:vid,blob:chosenFile});
+    pushVideo({id:vid,title,emoji:pickedEmoji,type:'file',src:''});
+  }catch(e){ err.textContent='Gagal menyimpan. Penyimpanan penuh?'; }
+  finally{ btn.disabled=false; btn.textContent='Tambah'; }
+});
+
+/* game */
+$('#gameBalloon').addEventListener('click',()=>{ sfxTap(); startBalloons(); });
+$('#btnBalloonExit').addEventListener('click',()=>{ sfxTap(); stopBalloons(); show('games'); });
+$('#gameMemory').addEventListener('click',()=>{ sfxTap(); startMemory(); });
+$('#btnMemoryExit').addEventListener('click',()=>{ sfxTap(); show('games'); });
+$('#btnMemoryAgain').addEventListener('click',()=>{ sfxTap(); startMemory(); });
+
+/* pemutar */
+$('#btnPlayerBack').addEventListener('click',()=>{ sfxTap(); stopStage(); openVideos(); });
+$('#btnPrev').addEventListener('click',()=>step(-1));
+$('#btnNext').addEventListener('click',()=>step(1));
+$('#btnPlay').addEventListener('click',()=>{
+  const vid=document.querySelector('#stage video'); if(!vid) return;
+  if(vid.paused) vid.play().catch(()=>{}); else vid.pause();
+});
+$('#btnReplay').addEventListener('click',()=>{
+  const vid=document.querySelector('#stage video');
+  $('#endOverlay').classList.add('hidden');
+  if(vid){ vid.currentTime=0; vid.play().catch(()=>{}); } else renderPlayer();
+});
+$('#btnNextVideo').addEventListener('click',()=>{ $('#endOverlay').classList.add('hidden'); step(1); });
+$('#btnToVideos').addEventListener('click',()=>{ sfxTap(); stopStage(); openVideos(); });
+
+/* PIN & pengaturan */
+$('#keypad').addEventListener('click',(e)=>{
+  const k=e.target.closest('[data-key]'); if(k) pressKey(k.dataset.key);
+});
+$('#btnPinCancel').addEventListener('click',()=>{ pendingAction=null; pinBuf=''; renderPin(); show('home'); });
+$('#btnBreakUnlock').addEventListener('click',()=>{
+  $('#breakOverlay').classList.add('hidden');
+  askPin(()=>{ renderHome(); show('home'); });
+});
+$('#btnTimerSave').addEventListener('click',()=>{
+  const m=Math.max(0,Math.min(180,parseInt($('#timerInput').value,10)||0));
+  state.timerMin=m; timerEnd=m>0?Date.now()+m*60000:0;
+  breakActive=false; $('#breakOverlay').classList.add('hidden');
+  saveState(); renderTimerPill(); toast(m>0?('Batas '+m+' menit'):'Tanpa batas');
+});
+$('#soundSwitch').addEventListener('click',()=>{
+  state.sound=state.sound===false?true:false;
+  $('#soundSwitch').classList.toggle('on',state.sound);
+  saveState(); if(state.sound) sfxTap();
+});
+$('#adminHideSwitch').addEventListener('click',()=>{
+  state.adminHidden = state.adminHidden!==true;
+  $('#adminHideSwitch').classList.toggle('on',state.adminHidden);
+  saveState(); renderHome();
+  toast(state.adminHidden ? 'Tombol admin disembunyikan' : 'Tombol admin ditampilkan');
+  sfxTap();
+});
+$('#btnExport').addEventListener('click',exportBackup);
+$('#fImport').addEventListener('change',async(e)=>{ await importBackup(e.target.files&&e.target.files[0]); e.target.value=''; });
+
+/* ---------- init ---------- */
+paintMascots(); renderEmojis(); renderMode(); renderHome(); renderVideos();
+ensureTimer(); renderTimerPill();
+if(navigator.storage&&navigator.storage.persist){ navigator.storage.persist().catch(()=>{}); }
+</script>
+</body>
+</html>
